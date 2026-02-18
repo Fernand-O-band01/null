@@ -1,9 +1,21 @@
-# 🌑 Null - Discord Clone
+<div align="center">
+  <img src="./assets/null_logo.jpg" alt="Null Logo" width="200">
+  
+  <h1>Null</h1>
+  
+  <p>
+    <strong>Un clon de Discord desarrollado desde cero.</strong>
+  </p>
 
-![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
-![WebSocket](https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=socket.io&logoColor=white)
+  <p>
+    <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
+    <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot" />
+    <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+    <img src="https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=socket.io&logoColor=white" alt="WebSocket" />
+  </p>
+</div>
+
+---
 
 ## 📋 Descripción
 
@@ -15,7 +27,7 @@ El objetivo principal fue entender y aplicar la arquitectura de WebSockets para 
 
 * **Comunicación en Tiempo Real:** Chat fluido utilizando WebSockets (STOMP & SockJS).
 * **Usuarios Conectados:** Lista dinámica de usuarios que muestra quién está *Online* y *Offline* al instante.
-* **Mensajería Privada:** Envio de mensajes 1 a 1 dirigidos a usuarios específicos.
+* **Mensajería Privada:** Envío de mensajes 1 a 1 dirigidos a usuarios específicos.
 * **Persistencia de Datos:** Historial de chat guardado en MongoDB (los mensajes no se pierden al recargar).
 * **Notificaciones Visuales:** Indicadores de mensajes nuevos cuando el chat no está activo.
 
@@ -36,10 +48,8 @@ El objetivo principal fue entender y aplicar la arquitectura de WebSockets para 
 
 ## 📸 Capturas de Pantalla
 
-*(Aquí puedes poner imágenes de tu proyecto. Sube las capturas a una carpeta en tu repo y enlázalas aquí)*
-
-![Login Screen](./screenshots/login.png)
-![Chat Interface](./screenshots/chat.png)
+<div align="center">
+  </div>
 
 ## 🔧 Instalación y Ejecución
 
@@ -52,13 +62,9 @@ Sigue estos pasos para correr el proyecto en tu máquina local:
     ```
 
 2.  **Configurar MongoDB:**
-    Asegúrate de tener MongoDB corriendo localmente o configura la URI en `src/main/resources/application.properties`:
-    ```properties
-    spring.data.mongodb.uri=mongodb://localhost:27017/null-db
-    ```
+    Asegúrate de tener MongoDB corriendo localmente o configura la URI en `src/main/resources/application.properties`.
 
 3.  **Ejecutar el Backend:**
-    Si tienes Maven instalado:
     ```bash
     mvn spring-boot:run
     ```
@@ -82,4 +88,6 @@ Este es un proyecto educativo, ¡pero cualquier sugerencia es bienvenida! Si tie
 * **Fernando Obando** - *Trabajo Inicial* - [Fernand-O-band01](https://github.com/Fernand-O-band01)
 
 ---
-⌨️ con ❤️ por [Fernando Obando](https://github.com/Fernand-O-band01)
+<div align="center">
+  <sub>⌨️ con ❤️ por <a href="https://github.com/Fernand-O-band01">Fernando Obando</a></sub>
+</div>
