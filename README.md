@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/Null_logo.jpg" alt="Null Logo" width="200">
+  <img src="./assets/null_logo.png" alt="Null Logo" width="200">
   
   <h1>Null</h1>
   
