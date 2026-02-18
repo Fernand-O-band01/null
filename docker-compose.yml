@@ -1,0 +1,47 @@
+services:
+  postgres:
+    container_name: postgres-sql-null
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_DB: null_Project
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - 5431:5432
+    networks:
+      - null-network-project
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin-null
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_DEFAULT_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - 5050:80
+    networks:
+      - null-network-project
+    restart: unless-stopped
+
+  mail-dev:
+    container_name: mail-dev-null
+    image: maildev/maildev
+    ports:
+      - 1080:1080
+      - 1025:1025
+
+networks:
+  null-network-project:
+    driver: bridge
+
+volumes:
+  pgadmin:
+  postgres:
+    driver: local
