@@ -2,10 +2,7 @@ package com.example.demo.user;
 
 import com.example.demo.role.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -25,9 +22,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(
-        name = "_user_"
-)
+@Builder
+@Table(name = "_user")
 @EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails , Principal {
 
@@ -37,7 +33,7 @@ public class User implements UserDetails , Principal {
     @Column(unique = true)
     private String email;
     private String Fullname;
-    private String user;
+    private String nickName;
     private String password;
     private LocalDate dateOfBirth;
     private boolean accountLocked;
