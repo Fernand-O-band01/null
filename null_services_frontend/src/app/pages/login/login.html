@@ -1,0 +1,53 @@
+<div class="min-h-screen w-full bg-[#1a1b26] bg-[url('/background_login.webp')] bg-cover bg-center bg-no-repeat bg-fixed flex items-center justify-center relative p-4">
+
+  <div class="absolute top-8 left-8 w-[120px] h-[80px] bg-[url('/null_imagotipo.webp')] bg-contain bg-center bg-no-repeat hidden sm:block"></div>
+
+  <div class="bg-[#313338] w-full max-w-[780px] rounded-lg shadow-2xl p-8 flex flex-col md:flex-row gap-8 text-white font-sans z-10">
+
+    <div class="flex-1 flex flex-col justify-center">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold mb-1">¡Hola de nuevo!</h2>
+        <p class="text-[#B5BAC1] text-sm">¡Nos alegramos mucho de volver a verte!</p>
+      </div>
+
+      <form class="space-y-5">
+        <div>
+          <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-2 tracking-wide"
+          for="login">
+            Correo electrónico o número de teléfono <span class="text-[#F23F42]">*</span>
+          </label>
+          <input type="text" id="login" [(ngModel)]="authRequest.username" class="w-full bg-[#1E1F22] border-none rounded-[3px] p-2.5 text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-2 tracking-wide">
+            Contraseña <span class="text-[#F23F42]">*</span>
+          </label>
+          <input type="password" [(ngModel)]="authRequest.password" class="w-full bg-[#1E1F22] border-none rounded-[3px] p-2.5 text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+          <a href="#" class="text-[#00A8FC] text-sm mt-2 inline-block hover:underline">¿Has olvidado la contraseña?</a>
+        </div>
+
+        <button class="w-full bg-[#5865F2] hover:bg-[#010d1a] text-white font-semibold py-2.5 rounded-[3px] transition-colors"
+        (click)="login()">
+          Iniciar sesión
+        </button>
+
+        <div class="text-sm text-[#B5BAC1]">
+          ¿Necesitas una cuenta? <a href="#" class="text-[#00A8FC] hover:underline" 
+          (click)="register()">Registrarse</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="flex-1 hidden md:flex flex-col items-center justify-center text-center pl-8 ">
+      <div class="bg-white p-2 rounded-lg mb-6">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=DiscordLoginExample" alt="Código QR" width="160" height="160">
+      </div>
+      <h3 class="text-xl font-bold mb-2">Iniciar sesión con código QR</h3>
+      <p class="text-[#B5BAC1] text-sm px-4">
+        Escanéalo con la <strong>aplicación de móvil de Discord</strong> para iniciar sesión de forma instantánea.
+      </p>
+    </div>
+
+  </div>
+</div>
