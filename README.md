@@ -4,14 +4,16 @@
   <h1>Null</h1>
   
   <p>
-    <strong>Un clon de Discord desarrollado desde cero.</strong>
+    <strong>Un clon de Discord desarrollado desde cero con Arquitectura Moderna.</strong>
   </p>
 
   <p>
+    <img src="https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular" />
     <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
     <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot" />
+    <img src="https://img.shields.io/badge/Apache_Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white" alt="Kafka" />
     <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
-    <img src="https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=socket.io&logoColor=white" alt="WebSocket" />
+    <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
   </p>
 </div>
 
@@ -19,75 +21,39 @@
 
 ## 📋 Descripción
 
-**Null** es una aplicación de chat en tiempo real inspirada en Discord. Este proyecto representa un hito importante en mi carrera como desarrollador, ya que es **mi primer proyecto Full Stack desarrollado completamente por mi cuenta**.
+**Null** es una aplicación de comunicación inspirada en Discord. Este proyecto representa un hito fundamental en mi carrera como desarrollador, marcando la transición hacia arquitecturas escalables. 
 
-El objetivo principal fue entender y aplicar la arquitectura de WebSockets para la comunicación bidireccional, la persistencia de datos NoSQL y la gestión de estados de usuario en tiempo real.
+El proyecto está estructurado como un **Monorepo**, separando claramente las responsabilidades del cliente (Frontend SPA) y el servidor (Backend), e integrando infraestructura contenerizada para bases de datos, mensajería asíncrona y pruebas de correo electrónico.
 
 ## 🚀 Características Principales
 
-* **Comunicación en Tiempo Real:** Chat fluido utilizando WebSockets (STOMP & SockJS).
-* **Usuarios Conectados:** Lista dinámica de usuarios que muestra quién está *Online* y *Offline* al instante.
-* **Mensajería Privada:** Envío de mensajes 1 a 1 dirigidos a usuarios específicos.
-* **Persistencia de Datos:** Historial de chat guardado en MongoDB (los mensajes no se pierden al recargar).
-* **Notificaciones Visuales:** Indicadores de mensajes nuevos cuando el chat no está activo.
+* **Autenticación y Seguridad:** Registro seguro de usuarios y validación de cuentas mediante códigos de activación (OTP) enviados por correo electrónico.
+* **Arquitectura Orientada a Eventos:** Uso de Apache Kafka para procesar de forma asíncrona notificaciones y correos, desacoplando el servicio principal.
+* **Plantillas de Correo Dinámicas:** Correos HTML responsivos y personalizados generados con Thymeleaf (con imágenes incrustadas via CID).
+* **Comunicación en Tiempo Real (En desarrollo):** Preparando el terreno para el uso de WebSockets (STOMP & SockJS) para mensajería instantánea.
+* **Infraestructura Contenerizada:** Entorno de desarrollo unificado con Docker Compose.
 
 ## 🛠️ Tecnologías Utilizadas
 
-### Backend
-* **Java 17**
-* **Spring Boot 3** (Web, WebSocket, Data MongoDB)
-* **Lombok** (Para reducir el código repetitivo)
+### Backend (`/null_services_backend`)
+* **Java 17+ & Spring Boot 3** (Web, Security, Data MongoDB, Mail)
+* **Apache Kafka** (Broker de mensajería para microservicios)
+* **Thymeleaf** (Motor de plantillas para correos)
+* **Lombok** (Reducción de código repetitivo)
 
-### Frontend
-* **HTML5 & CSS3** (Diseño responsivo y moderno)
-* **Vanilla JavaScript** (Lógica del cliente sin frameworks pesados)
-* **SockJS & Stomp.js** (Cliente para la conexión WebSocket)
+### Frontend (`/null_services_frontend`)
+* **Angular** (Single Page Application - CSR)
+* **HTML5 & CSS/SCSS** (Diseño moderno e interfaces dinámicas)
 
-### Base de Datos
-* **MongoDB** (Almacenamiento de usuarios y mensajes)
+### Infraestructura & Bases de Datos
+* **Docker & Docker Compose**
+* **MongoDB** (Persistencia NoSQL)
+* **Maildev / Mailhog** (Servidor SMTP local para pruebas de correo)
 
-## 📸 Capturas de Pantalla
+## 📁 Estructura del Monorepo
 
-<div align="center">
-  </div>
-
-## 🔧 Instalación y Ejecución
-
-Sigue estos pasos para correr el proyecto en tu máquina local:
-
-1.  **Clonar el repositorio:**
-    ```bash
-    git clone [https://github.com/Fernand-O-band01/null.git](https://github.com/Fernand-O-band01/null.git)
-    cd null
-    ```
-
-2.  **Configurar MongoDB:**
-    Asegúrate de tener MongoDB corriendo localmente o configura la URI en `src/main/resources/application.properties`.
-
-3.  **Ejecutar el Backend:**
-    ```bash
-    mvn spring-boot:run
-    ```
-
-4.  **Acceder a la aplicación:**
-    Abre tu navegador y visita: `http://localhost:8080`
-
-## 🧠 Aprendizajes
-
-Durante el desarrollo de **Null**, enfrenté y superé varios desafíos técnicos:
-* Configuración correcta del **Broker de Mensajería** en Spring para rutas públicas y privadas.
-* Manejo de **IDs únicos en MongoDB** para evitar duplicidad de usuarios.
-* Sincronización del estado del cliente (Frontend) con los eventos del servidor.
-
-## 🤝 Contribución
-
-Este es un proyecto educativo, ¡pero cualquier sugerencia es bienvenida! Si tienes ideas para mejorarlo, siéntete libre de abrir un *issue* o enviar un *pull request*.
-
-## ✒️ Autor
-
-* **Fernando Obando** - *Trabajo Inicial* - [Fernand-O-band01](https://github.com/Fernand-O-band01)
-
----
-<div align="center">
-  <sub>⌨️ con ❤️ por <a href="https://github.com/Fernand-O-band01">Fernando Obando</a></sub>
-</div>
+```text
+null/
+├── docker-compose.yml         # Orquestación de infraestructura (Mongo, Kafka, Maildev)
+├── null_services_backend/     # API REST y lógica de negocio en Spring Boot
+└── null_services_frontend/    # Cliente web en Angular
