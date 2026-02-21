@@ -19,7 +19,7 @@ import java.util.Map;
 public class EmailService {
 
     private final JavaMailSender mailSender;
-    private SpringTemplateEngine templateEngine;
+    private final SpringTemplateEngine templateEngine;
 
     @Async
     public void sendEmail(
