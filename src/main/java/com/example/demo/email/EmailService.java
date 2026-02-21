@@ -3,6 +3,7 @@ package com.example.demo.email;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -35,7 +36,7 @@ public class EmailService {
         if(emailTemplate == null){
             templateName = "confirm-url";
         }else{
-            templateName = emailTemplate.name();
+            templateName = emailTemplate.getName();
         }
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -59,6 +60,10 @@ public class EmailService {
 
         String template = templateEngine.process(templateName, context);
         helper.setText(template, true);
+
+        ClassPathResource logoImage = new ClassPathResource("static/images/null_imagotipo_activation_html.png");
+        helper.addInline("logoNull", logoImage);
+
         mailSender.send(mimeMessage);
 
     }

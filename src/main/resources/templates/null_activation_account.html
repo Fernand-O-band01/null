@@ -1,10 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Null Account Activation</title>
+    <style>
+        /* Reseteo básico para clientes de correo */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9; /* Fondo gris claro tipo Discord */
+            color: #4f545c;
+        }
+        .wrapper {
+            width: 100%;
+            background-color: #f9f9f9;
+            padding: 40px 0;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .logo {
+            width: 180px; /* Aquí controlas el tamaño del logo */
+            height: auto;
+        }
+        .card {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #ffffff; /* Tarjeta blanca */
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Sombra suave */
+        }
+        h1 {
+            font-size: 20px;
+            color: #333333;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        p {
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            background-color: #010d1a; /* Color Azul/Morado de Discord */
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 15px;
+            display: inline-block;
+        }
+        .code-container {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e3e5e8;
+            margin: 30px 0;
+        }
+        .help-text {
+            font-size: 13px;
+            color: #010d1a;
+            margin-bottom: 5px;
+        }
+        .help-text a {
+            color: #5865F2;
+            text-decoration: none;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #99aab5;
+            margin-top: 30px;
+        }
+        .footer a {
+            color: #010d1a;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
+<div class="wrapper">
+    <div class="logo-container">
+        <img src="cid:logoNull" alt="Null Logo" class="logo">
+    </div>
 
+    <div class="card">
+        <h1 th:text="'Hey ' + ${username} + ','">Hey User,</h1>
+
+        <p>Thanks for registering for an account on Null! Before we get started, we just need to confirm that this is you. Click below to verify your email address:</p>
+
+        <div class="button-container">
+            <a th:href="${confirmationUrl}" target="_blank" class="btn">Verify Email</a>
+        </div>
+
+        <div class="code-container">
+            O usa este código: <strong th:text="${activationCode}"></strong>
+        </div>
+
+        <hr>
+
+        <p class="help-text">¿Necesitas ayuda? <a href="#">Contacta con nuestro equipo de soporte</a> o avísanos por X @Null.</p>
+        <p class="help-text">¿Quieres darnos tu opinión? Dinos lo que piensas en nuestra <a href="#">página de opiniones</a>.</p>
+    </div>
+
+    <div class="footer">
+        <p>Enviado por Null • <a href="#">Consulta nuestro blog</a> • <a href="#">@Null</a><br>
+            Managua, Nicaragua</p>
+    </div>
+</div>
 </body>
 </html>
