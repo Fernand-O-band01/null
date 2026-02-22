@@ -37,11 +37,26 @@ services:
       - 1080:1080
       - 1025:1025
 
+  mongodb:
+    image: mongo:latest
+    container_name: null_mongodb
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INIT_ROOT_USERNAME: admin
+      MONGO_INIT_ROOT_PASSWORD: admin
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - null-network-project
+
 networks:
   null-network-project:
     driver: bridge
 
 volumes:
+  mongo_data:
   pgadmin:
   postgres:
     driver: local
