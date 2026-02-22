@@ -1,0 +1,29 @@
+<div class="min-h-screen w-full bg-[#1a1b26] bg-[url('/background_login.webp')] bg-cover bg-center bg-no-repeat bg-fixed flex items-center justify-center relative p-4">
+
+  <div class="bg-[#313338] w-full max-w-[480px] rounded-lg shadow-2xl p-8 flex flex-col items-center justify-center gap-6 text-white font-sans z-10 text-center">
+    
+    <div>
+      <h1 class="text-2xl font-bold mb-2">Revisa tu correo</h1>
+      <p class="text-[#B5BAC1] text-sm">
+        Te hemos enviado un código de 6 dígitos para verificar tu cuenta. Introdúcelo a continuación.
+      </p>
+    </div>
+
+    <div class="my-4">
+      <code-input 
+        [isCodeHidden]="false" 
+        [codeLength]="6" 
+        (codeCompleted)="onCodeCompleted($event)">
+      </code-input>
+    </div>
+
+    @if (errorMessage) {
+      <p class="text-[#F23F42] text-sm font-semibold">{{ errorMessage }}</p>
+    }
+
+    <div class="text-sm text-[#B5BAC1] mt-2">
+      <a routerLink="/login" class="text-[#00A8FC] hover:underline cursor-pointer">Volver al inicio de sesión</a>
+    </div>
+
+  </div>
+</div>

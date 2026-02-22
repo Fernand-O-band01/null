@@ -46,6 +46,7 @@ public class AuthenticationService {
                 .fullname(request.getFullname())
                 .nickName(request.getNickName())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .dateOfBirth(request.getDateOfBirth())
                 .accountLocked(false)
                 .enable(false)
                 .roles(List.of(userRole))

@@ -1,0 +1,109 @@
+<div class="min-h-screen 
+w-full bg-[#1a1b26] bg-[url('/background_login.webp')] 
+bg-cover bg-center bg-no-repeat bg-fixed flex items-center justify-center relative p-4">
+
+  <div class="absolute top-8 
+  left-8 w-[120px] h-[80px] bg-[url('/null_imagotipo.webp')] 
+  bg-contain bg-center bg-no-repeat hidden sm:block"></div>
+
+  <div class="bg-[#313338] 
+  w-full max-w-[480px] rounded-lg shadow-2xl 
+  p-8 flex flex-col justify-center gap-8 text-white font-sans 
+  z-10">
+
+  <h1 class="text-2xl font-bold text-center">Crea una cuenta</h1>
+  <form class="space-y-5">
+    <div>
+        <label for="email" class="block 
+        text-xs font-bold 
+        mb-2 tracking-wide"> Correo Electronico <span class="text-[#F23F42]">*</span></label>
+        <input type="text" id="email" name="email" [(ngModel)]="registrationRequest.email" 
+        class="w-full bg-[#1E1F22] border-none rounded-[10px] p-1.5 
+        text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+    </div>
+    <div>
+        <label for="displayName" class="block 
+        text-xs font-bold 
+        mb-2 tracking-wide">Nombre de visualizacion</label>
+        <input type="text" id="displayName" name="displayName" [(ngModel)]="registrationRequest.fullname" 
+        class="w-full bg-[#1E1F22] border-none rounded-[10px] p-1.5 
+        text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+    </div>
+    <div>
+        <label for="username" class="block 
+        text-xs font-bold 
+        mb-2 tracking-wide">Username<span class="text-[#F23F42]">*</span></label>
+        <input type="text" id="username" name="username" [(ngModel)]="registrationRequest.nickName" 
+        class="w-full bg-[#1E1F22] border-none rounded-[10px] p-1.5 
+        text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+    </div>
+    <div>
+        <label for="password" class="block 
+        text-xs font-bold 
+        mb-2 tracking-wide"> Contraseña <span class="text-[#F23F42]">*</span></label>
+        <input type="password" id="password" name="password" [(ngModel)]="registrationRequest.password" 
+        class="w-full bg-[#1E1F22] border-none rounded-[10px] p-1.5 
+        text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+    </div>
+
+    <div>
+      <label class="block text-xs font-bold text-[#B5BAC1] mb-2 tracking-wide">
+        Fecha de nacimiento <span class="text-[#F23F42]">*</span>
+      </label>
+      
+    <div class="flex gap-4">
+      
+      <select name="day" [(ngModel)]="selectedDay"
+              class="w-full bg-[#1E1F22] border-none rounded-[3px] py-2 pl-2 pr-8 text-sm text-white outline-none focus:ring-2 focus:ring-[#00A8FC] cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22%23B5BAC1%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_0.5rem_center] bg-[length:1.5em]">
+        <option value="" disabled selected>Día</option>
+        @for (day of days; track day) {
+          <option [value]="day">{{ day }}</option>
+        }
+      </select>
+
+      <select name="month" [(ngModel)]="selectedMonth"
+              class="w-full bg-[#1E1F22] border-none rounded-[3px] py-2 pl-2 pr-8 text-sm text-white outline-none focus:ring-2 focus:ring-[#00A8FC] cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22%23B5BAC1%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_0.5rem_center] bg-[length:1.5em]">
+        <option value="" disabled selected>Mes</option>
+        @for (month of months; track month.value) {
+          <option [value]="month.value">{{ month.name }}</option>
+        }
+      </select>
+
+      <select name="year" [(ngModel)]="selectedYear"
+              class="w-full bg-[#1E1F22] border-none rounded-[3px] py-2 pl-2 pr-8 text-sm text-white outline-none focus:ring-2 focus:ring-[#00A8FC] cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22%23B5BAC1%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_0.5rem_center] bg-[length:1.5em]">
+        <option value="" disabled selected>Año</option>
+        @for (year of years; track year) {
+          <option [value]="year">{{ year }}</option>
+        }
+      </select>
+      
+    </div>
+    </div>
+
+    <div class="flex items-start gap-3 mt-2">
+      <input type="checkbox" id="terms" class="mt-1 w-5 h-5 rounded cursor-pointer accent-[#5865F2]">
+      <label for="terms" class="text-xs text-[#B5BAC1] leading-relaxed">
+        (Opcional) Estoy de acuerdo con que me envíen correos con actualizaciones, consejos y ofertas. 
+        Al hacer clic en "Crear cuenta", aceptas las <a href="#" class="text-[#00A8FC] hover:underline">Condiciones del Servicio</a>.
+      </label>
+    </div>
+
+     <div class="flex items-start gap-3 mt-2">
+      <label for="terms" class="text-xs text-[#B5BAC1] leading-relaxed">
+        Al hacer clic en "Crear cuenta", aceptas las <a href="#" class="text-[#00A8FC] hover:underline">Condiciones del Servicio</a> 
+        de Null. Por favor, lee nuestras <a href="#" class="text-[#00A8FC] hover:underline">Políticas de Privacidad</a>.
+      </label>
+    </div>
+
+    <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-3 rounded-[3px] transition-colors mt-6"
+    (click)="register()">
+      Crear cuenta
+    </button>
+
+    <div class="text-sm text-[#B5BAC1]">
+      <a routerLink="/login" class="text-[#00A8FC] hover:underline cursor-pointer">¿Ya tienes una cuenta? Inicia sesión</a>
+    </div>
+
+  </form>
+  
+</div>

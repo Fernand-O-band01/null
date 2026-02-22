@@ -14,5 +14,6 @@ export interface RegistrationRequest {
     fullname: string;
     nickName: string;
     password: string;
+    dateOfBirth: string;
 }
 

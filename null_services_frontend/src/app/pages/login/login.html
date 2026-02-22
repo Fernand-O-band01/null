@@ -13,17 +13,20 @@
       <form class="space-y-5">
         <div>
           <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-2 tracking-wide"
-          for="login">
+          for="username">
             Correo electrónico o número de teléfono <span class="text-[#F23F42]">*</span>
           </label>
-          <input type="text" id="login" [(ngModel)]="authRequest.username" class="w-full bg-[#1E1F22] border-none rounded-[3px] p-2.5 text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+          <input type="text" id="username" name="username" [(ngModel)]="authRequest.username" 
+          class="w-full bg-[#1E1F22] border-none rounded-[3px] p-2.5 text-white outline-none 
+          focus:ring-2 focus:ring-[#00A8FC] transition-all">
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-2 tracking-wide">
+          <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-2 tracking-wide"
+          for="password" id="password">
             Contraseña <span class="text-[#F23F42]">*</span>
           </label>
-          <input type="password" [(ngModel)]="authRequest.password" class="w-full bg-[#1E1F22] border-none rounded-[3px] p-2.5 text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+          <input type="password" name="password" [(ngModel)]="authRequest.password" class="w-full bg-[#1E1F22] border-none rounded-[3px] p-2.5 text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
           <a href="#" class="text-[#00A8FC] text-sm mt-2 inline-block hover:underline">¿Has olvidado la contraseña?</a>
         </div>
 
@@ -33,7 +36,7 @@
         </button>
 
         <div class="text-sm text-[#B5BAC1]">
-          ¿Necesitas una cuenta? <a href="#" class="text-[#00A8FC] hover:underline" 
+          ¿Necesitas una cuenta? <a  class="text-[#00A8FC] hover:underline" 
           (click)="register()">Registrarse</a>
         </div>
       </form>
@@ -45,7 +48,7 @@
       </div>
       <h3 class="text-xl font-bold mb-2">Iniciar sesión con código QR</h3>
       <p class="text-[#B5BAC1] text-sm px-4">
-        Escanéalo con la <strong>aplicación de móvil de Discord</strong> para iniciar sesión de forma instantánea.
+        Escanéalo con la <strong>aplicación de móvil de Null</strong> para iniciar sesión de forma instantánea.
       </p>
     </div>
 
