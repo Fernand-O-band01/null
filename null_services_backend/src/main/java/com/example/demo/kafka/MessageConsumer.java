@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class MessageConsumer {
     @KafkaListener(topics = "chat-messages", groupId = "null-group")
     public void consume(Message message) {
-        log.info("Received message from kafka '{}' de la sala: {}",
+        log.info("Received message from kafka '{}' from room: {}",
                 message.getContent(),
                 message.getConversationId());
     }
