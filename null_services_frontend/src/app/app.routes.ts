@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
 import { ActivateAccount } from './pages/activate-account/activate-account';
+import { authGuard } from './services/api/guard/authguard';
 
 export const routes: Routes = [
     {
@@ -20,5 +21,10 @@ export const routes: Routes = [
     {
         path: 'activate-account',
         component: ActivateAccount
+    },
+    {
+        path: 'chat',
+        loadChildren: () => import('./modules/chat/chat-module').then(m => m.ChatModule),
+        canActivate: [authGuard]
     }
 ];

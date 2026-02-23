@@ -1,3 +1,9 @@
 export * from './authentication.service';
 import { AuthenticationService } from './authentication.service';
-export const APIS = [AuthenticationService];
+export * from './conversationController.service';
+import { ConversationControllerService } from './conversationController.service';
+export * from './messageController.service';
+import { MessageControllerService } from './messageController.service';
+export * from './serverController.service';
+import { ServerControllerService } from './serverController.service';
+export const APIS = [AuthenticationService, ConversationControllerService, MessageControllerService, ServerControllerService];

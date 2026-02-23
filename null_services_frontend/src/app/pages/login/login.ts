@@ -35,7 +35,7 @@ export class Login {
       next: (response) => {
         this.tokenService.token = response.token as string;
         console.log('Inicio de Sesion Exitoso', response);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/chat']);
 
       },
       error: (error) => {
