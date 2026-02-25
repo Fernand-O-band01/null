@@ -42,7 +42,7 @@ export class Login {
         }
 
         console.log('Inicio de Sesion Exitoso', response);
-        this.router.navigate(['/chat']);
+        this.router.navigate(['/home']);
 
       },
       error: (error) => {

@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Main } from './pages/main/main';
 import { authGuard } from '../../services/api/guard/authguard';
-import { ChatRoom } from './pages/chat-room/chat-room';
+import { Home } from './pages/home/home/home';
 import { DiscoverServers } from './pages/discover-servers/discover-servers';
 
 const routes: Routes = [
@@ -13,8 +13,8 @@ const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'server/:serverId/channel/:channelId',
-        component: ChatRoom,
+        path: '',
+        component: Home,
         canActivate: [authGuard]
       },
       {

@@ -23,7 +23,7 @@ export const routes: Routes = [
         component: ActivateAccount
     },
     {
-        path: 'chat',
+        path: 'home',
         loadChildren: () => import('./modules/chat/chat-module').then(m => m.ChatModule),
         canActivate: [authGuard]
     }

@@ -28,7 +28,7 @@ public class MessageService {
 
         messageProducer.sendMessage(savedMessage);
 
-        return messageRepository.save(message);
+        return savedMessage;
     }
 
     public List<Message> findChatMessages(Long conversationId){

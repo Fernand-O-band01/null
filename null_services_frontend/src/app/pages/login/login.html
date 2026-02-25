@@ -17,7 +17,7 @@
             Correo electrónico o número de teléfono <span class="text-[#F23F42]">*</span>
           </label>
           <input type="text" id="username" name="username" [(ngModel)]="authRequest.username" 
-          class="w-full bg-[#1E1F22] border-none rounded-[3px] p-2.5 text-white outline-none 
+          class="w-full bg-[#1E1F22] border-none rounded-[10px] p-2.5 text-white outline-none 
           focus:ring-2 focus:ring-[#00A8FC] transition-all">
         </div>
 
@@ -26,17 +26,17 @@
           for="password" id="password">
             Contraseña <span class="text-[#F23F42]">*</span>
           </label>
-          <input type="password" name="password" [(ngModel)]="authRequest.password" class="w-full bg-[#1E1F22] border-none rounded-[3px] p-2.5 text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
+          <input type="password" name="password" [(ngModel)]="authRequest.password" class="w-full bg-[#1E1F22] border-none rounded-[10px] p-2.5 text-white outline-none focus:ring-2 focus:ring-[#00A8FC] transition-all">
           <a href="#" class="text-[#00A8FC] text-sm mt-2 inline-block hover:underline">¿Has olvidado la contraseña?</a>
         </div>
 
-        <button class="w-full bg-[#5865F2] hover:bg-[#010d1a] text-white font-semibold py-2.5 rounded-[3px] transition-colors"
+        <button class="w-full bg-[#5865F2] hover:bg-[#010d1a] text-white font-semibold py-2.5 rounded-[10px] transition-colors"
         (click)="login()">
           Iniciar sesión
         </button>
 
         <div class="text-sm text-[#B5BAC1]">
-          ¿Necesitas una cuenta? <a  class="text-[#00A8FC] hover:underline" 
+          ¿Necesitas una cuenta? <a  class="text-[#00A8FC] hover:underline cursor-pointer" 
           (click)="register()">Registrarse</a>
         </div>
       </form>
