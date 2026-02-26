@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ChannelSidebar } from './channel-sidebar';
+import { FriendsPending } from './friends-pending';
 
-describe('ChannelSidebar', () => {
-  let component: ChannelSidebar;
-  let fixture: ComponentFixture<ChannelSidebar>;
+describe('FriendsPending', () => {
+  let component: FriendsPending;
+  let fixture: ComponentFixture<FriendsPending>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChannelSidebar]
+      imports: [FriendsPending]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ChannelSidebar);
+    fixture = TestBed.createComponent(FriendsPending);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

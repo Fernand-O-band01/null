@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/friends")
@@ -16,21 +17,22 @@ public class FriendsController {
     private final FriendsService friendsService;
 
     @PostMapping("/request/{targetUserId}")
-    public ResponseEntity<String> requestFriends(
+    public ResponseEntity<Map<String, String>> requestFriends(
             @PathVariable("targetUserId") Integer targetUserId,
             Authentication connectedUser
     ){
         friendsService.sendFriendRequest(targetUserId, connectedUser);
-        return ResponseEntity.ok("Friend request has been sent");
+
+        return ResponseEntity.ok(Map.of("message", "Friend request has been sent"));
     }
 
     @PatchMapping("/accept/{friendshipId}")
-    public ResponseEntity<String> acceptFriendRequest(
+    public ResponseEntity<Map<String, String>> acceptFriendRequest(
             @PathVariable("friendshipId") Long friendshipId,
             Authentication connectedUser
     ){
         friendsService.acceptFriendRequest(friendshipId, connectedUser);
-        return ResponseEntity.ok("Friend request has been accepted");
+        return ResponseEntity.ok(Map.of("message","Friend request has been accepted"));
     }
 
     @GetMapping

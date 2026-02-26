@@ -5,6 +5,7 @@ api.module.ts
 api/api.ts
 api/authentication.service.ts
 api/conversationController.service.ts
+api/friendsController.service.ts
 api/messageController.service.ts
 api/serverController.service.ts
 configuration.ts
@@ -14,6 +15,8 @@ index.ts
 model/authenticationRequest.ts
 model/authenticationResponse.ts
 model/conversationResponse.ts
+model/friendRequestDTO.ts
+model/friendResponseDTO.ts
 model/message.ts
 model/models.ts
 model/registrationRequest.ts
