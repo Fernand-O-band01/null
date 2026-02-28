@@ -9,31 +9,60 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio encargado de orquestar la lógica de negocio para los Servidores.
+ * <p>
+ * Gestiona la creación de comunidades, la recuperación de las mismas y la
+ * transformación de las entidades persistentes en objetos de respuesta (DTOs).
+ * Actúa como intermediario entre el controlador y la capa de datos.
+ * </p>
+ */
 @Service
 @RequiredArgsConstructor
 public class ServerService {
 
     private final ServerRepository serverRepository;
 
+    /**
+     * Crea un nuevo servidor en el sistema y asigna al creador como dueño y miembro.
+     * <p>
+     * NOTA DE ARQUITECTURA: Al usar {@link Set#of(Object)}, garantizamos que el servidor
+     * inicie con al menos un miembro (el propietario). Esto es vital para que las
+     * consultas de "mis servidores" funcionen correctamente desde el minuto uno.
+     * </p>
+     *
+     * @param request DTO con la información básica del servidor (nombre, imagen).
+     * @param connectedUser Objeto de autenticación del usuario que solicita la creación.
+     * @return {@link ServerResponse} con los datos del servidor persistido.
+     */
     public ServerResponse createServer(
             ServerRequest request,
             Authentication connectedUser
     ){
+        // Obtenemos el usuario actual del principal de seguridad
         User user = (User) connectedUser.getPrincipal();
 
         Server newServer = Server.builder()
                 .name(request.getName())
                 .imageUrl(request.getImageUrl())
                 .owner(user)
-                .members(Set.of(user))
+                .members(Set.of(user)) // Inicia la comunidad contigo mismo
                 .build();
 
         Server savedServer = serverRepository.save(newServer);
 
         return mapToResponse(savedServer);
-
     }
 
+    /**
+     * Recupera todos los servidores registrados en la plataforma.
+     * <p>
+     * Ideal para funciones de "Explorar" o "Descubrir" donde se muestran
+     * comunidades públicas a los usuarios.
+     * </p>
+     *
+     * @return Lista de todos los servidores mapeados a sus respuestas DTO.
+     */
     public List<ServerResponse> findAll() {
         return serverRepository.findAll()
                 .stream()
@@ -41,6 +70,16 @@ public class ServerService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Obtiene la lista de servidores a los que el usuario autenticado pertenece.
+     * <p>
+     * Utiliza el ID extraído del token JWT para filtrar en la base de datos a través
+     * de la relación Many-to-Many.
+     * </p>
+     *
+     * @param connectedUser Usuario autenticado que realiza la consulta.
+     * @return Lista de servidores asociados al usuario.
+     */
     public List<ServerResponse> findByUser(Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
         return serverRepository.findAllByMembersId(user.getId())
@@ -49,6 +88,16 @@ public class ServerService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Método helper privado para transformar una Entidad Server en un DTO ServerResponse.
+     * <p>
+     * Este mapeo manual asegura que no enviemos datos internos de la base de datos
+     * ni relaciones circulares hacia el Frontend.
+     * </p>
+     *
+     * @param server La entidad a transformar.
+     * @return El objeto de respuesta listo para JSON.
+     */
     private ServerResponse mapToResponse(Server server) {
         return ServerResponse.builder()
                 .id(server.getId())
