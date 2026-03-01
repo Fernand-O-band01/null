@@ -1,5 +1,6 @@
 package com.example.demo.friends;
 
+import com.example.demo.user.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,4 +14,5 @@ public class FriendResponseDTO {
 
     private Integer id;
     private String name;
+    private UserStatus status;
 }

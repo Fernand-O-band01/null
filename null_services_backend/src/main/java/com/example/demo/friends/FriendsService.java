@@ -81,6 +81,7 @@ public class FriendsService {
         return FriendResponseDTO.builder()
                 .id(user.getId())
                 .name(user.getNickName())
+                .status(user.getStatus())
                 .build();
     }
 

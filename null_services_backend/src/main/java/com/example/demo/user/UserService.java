@@ -1,36 +1,30 @@
 package com.example.demo.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate; // 👈 Importante
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-/**
- * Servicio encargado de la gestión de perfiles y configuraciones de los usuarios.
- */
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate; // 👈 Inyectamos el "mensajero"
 
-    /**
-     * Actualiza el estado de presencia visual del usuario en la plataforma.
-     * <p>
-     * Permite implementar el modo "Invisible" (OFFLINE) o estados personalizados
-     * (AWAY, DO_NOT_DISTURB) sin cerrar la conexión real del usuario.
-     * </p>
-     *
-     * @param newStatus El nuevo estado seleccionado por el usuario.
-     * @param connectedUser El usuario autenticado que realiza la petición.
-     */
     public void updatePresenceStatus(UserStatus newStatus, Authentication connectedUser) {
-        // Extraemos al usuario directamente del token JWT actual
         User user = (User) connectedUser.getPrincipal();
-
-        // Actualizamos el estado
         user.setStatus(newStatus);
-
-        // Guardamos los cambios en la base de datos
         userRepository.save(user);
+
+        // 📣 NOTIFICACIÓN EN TIEMPO REAL
+        // Enviamos el nuevo estado a un "topic" único basado en el ID del usuario.
+        // Ejemplo de destino: /topic/user/status/5
+        String destination = "/topic/user/status/" + user.getId();
+
+        // Enviamos solo el nuevo estado (ej: "AWAY")
+        messagingTemplate.convertAndSend(destination, newStatus.toString());
+
+        System.out.println("WebSocket emitido a: " + destination + " con valor: " + newStatus);
     }
 }

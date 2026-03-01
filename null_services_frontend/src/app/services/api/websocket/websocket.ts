@@ -1,35 +1,42 @@
 import { Injectable } from '@angular/core';
 import { RxStomp, RxStompConfig } from '@stomp/rx-stomp';
 
-
-const rxStompConfig: RxStompConfig = {
-  brokerURL: 'ws://localhost:8088/api/v1/ws',
-
-  connectHeaders: {
-  },
-
-  heartbeatIncoming: 0,
-  heartbeatOutgoing: 20000,
-
-  reconnectDelay: 5000,
-
-  debug: (msg: string): void => {
-    console.log(new Date(), msg);
-  },
-
-}
-
 @Injectable({
   providedIn: 'root',
 })
 export class Websocket {
+  public rxStomp: RxStomp = new RxStomp();
 
-  public rxStomp: RxStomp;
+  // 🚀 Nivel Arquitecto: Conectar SOLO cuando sabemos que hay token
+  public conectar() {
+    // Si ya está conectado, no hacemos nada
+    if (this.rxStomp.active) {
+      return;
+    }
 
-  constructor() {
-    this.rxStomp = new RxStomp();
+    const token = localStorage.getItem('token');
+    
+    // Si no hay token (ej. pantalla de login), abortamos la conexión
+    if (!token) {
+      console.warn('⚠️ Intento de conexión WS abortado: No hay token aún.');
+      return;
+    }
+
+    const rxStompConfig: RxStompConfig = {
+      brokerURL: 'ws://localhost:8088/api/v1/ws',
+      connectHeaders: {
+        Authorization: `Bearer ${token}`
+      },
+      heartbeatIncoming: 0,
+      heartbeatOutgoing: 20000,
+      reconnectDelay: 5000,
+      debug: (msg: string): void => {
+        // console.log(new Date(), msg);
+      },
+    };
+
     this.rxStomp.configure(rxStompConfig);
     this.rxStomp.activate();
+    console.log('🔌 WebSocket activado con Token!');
   }
-  
 }

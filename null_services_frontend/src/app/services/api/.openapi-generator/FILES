@@ -8,6 +8,7 @@ api/conversationController.service.ts
 api/friendsController.service.ts
 api/messageController.service.ts
 api/serverController.service.ts
+api/users.service.ts
 configuration.ts
 encoder.ts
 git_push.sh

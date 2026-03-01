@@ -1,64 +1,104 @@
 package com.example.demo.websocket;
 
+import com.example.demo.security.JwtService; // 👈 Importamos tu servicio real
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageHeaderAccessor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-/**
- * Configuración principal del servidor WebSocket y el protocolo STOMP.
- * <p>
- * Esta clase habilita el motor de mensajería en tiempo real. Define los puntos de
- * conexión (endpoints) para que el frontend de Angular inicie el "handshake" y
- * configura las rutas por donde viajarán los mensajes de chat.
- * </p>
- */
 @Configuration
-@EnableWebSocketMessageBroker // Activa el broker de mensajería respaldado por WebSockets
+@EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    // Variable inyectada desde application.yml (ej. http://localhost:4200)
     @Value("${application.cors.allowed-origins}")
     private String[] allowedOrigins;
 
-    /**
-     * Registra el endpoint inicial (la puerta de entrada) del WebSocket.
-     * <p>
-     * Aquí es donde el cliente (Angular/SockJS) realiza la primera petición HTTP
-     * para "actualizar" (upgrade) la conexión a un túnel WebSocket persistente.
-     * </p>
-     *
-     * @param registry El registro de endpoints de STOMP.
-     */
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                // NOTA DE ARQUITECTURA: Actualmente acepta conexiones de cualquier origen ("*")
-                // para facilitar el desarrollo. En producción, se debería cambiar a
-                // setAllowedOrigins(allowedOrigins) para mayor seguridad.
                 .setAllowedOriginPatterns("*");
     }
 
-    /**
-     * Configura el enrutador (Broker) de mensajes.
-     * Define qué prefijos se usan para enviar mensajes al servidor y cuáles
-     * se usan para que el servidor transmita mensajes a los clientes suscritos.
-     *
-     * @param registry El registro del broker de mensajes.
-     */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-
-        // 1. Prefijos de SALIDA (De Servidor a Cliente)
-        // Los clientes (Angular) se suscribirán a rutas que empiecen por "/topic".
-        // Ej: Servidor envía mensaje a "/topic/chat/1" y todos los suscritos lo reciben.
         registry.enableSimpleBroker("/topic");
-
-        // 2. Prefijos de ENTRADA (De Cliente a Servidor)
-        // Cuando Angular envíe un mensaje al servidor, la ruta debe empezar por "/app".
-        // Ej: Angular envía a "/app/chat.sendMessage", y Spring lo rutea al @MessageMapping correspondiente.
         registry.setApplicationDestinationPrefixes("/app");
+    }
+
+    /**
+     * INTERCEPTOR: El "portero" del WebSocket.
+     * Atrapa el token JWT que viene desde Angular, lo valida y le da una
+     * identidad real (Principal) a la sesión de STOMP.
+     */
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(new ChannelInterceptor() {
+            @Override
+            public Message<?> preSend(Message<?> message, MessageChannel channel) {
+                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+
+                // Solo interceptamos cuando el cliente intenta establecer la conexión inicial
+                if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+
+                    // Extraemos el token del header que configuraste en Angular (rxStompConfig)
+                    String authHeader = accessor.getFirstNativeHeader("Authorization");
+
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        String token = authHeader.substring(7);
+
+                        try {
+                            // 1. Sacamos el email usando tu JwtService
+                            String userEmail = jwtService.extractUsername(token);
+
+                            if (userEmail != null) {
+                                // 2. Buscamos al usuario en la BD
+                                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+
+                                // 3. Validamos que el token no esté expirado o corrupto
+                                if (jwtService.isTokenValid(token, userDetails)) {
+
+                                    // 4. Creamos el objeto de autenticación
+                                    UsernamePasswordAuthenticationToken authentication =
+                                            new UsernamePasswordAuthenticationToken(
+                                                    userDetails,
+                                                    null,
+                                                    userDetails.getAuthorities()
+                                            );
+
+                                    // 5. ¡LA MAGIA! Vinculamos este usuario a la sesión del WebSocket
+                                    accessor.setUser(authentication);
+                                    System.out.println("✅ WS Autenticado: " + userEmail);
+                                }
+                            }
+                        } catch (Exception e) {
+                            // Si el token es inválido o expiró, simplemente no autenticamos la sesión
+                            System.err.println("❌ Token JWT inválido en el WebSocket: " + e.getMessage());
+                        }
+                    } else {
+                        System.out.println("⚠️ Intento de conexión WS sin token JWT.");
+                    }
+                }
+                return message;
+            }
+        });
     }
 }

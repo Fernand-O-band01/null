@@ -1,1 +1,47 @@
-<p>friends-online works!</p>
+<div class="flex flex-col w-full h-full bg-[#313338] px-8 pt-4 overflow-hidden select-none">
+  
+  <div class="text-[#b5bac1] text-xs font-bold uppercase mb-4 tracking-wider">
+    En línea — {{ onlineFriends.length }}
+  </div>
+
+  <div class="flex flex-col gap-[2px] overflow-y-auto pr-2 custom-scrollbar">
+    
+    @for (friend of onlineFriends; track friend.id) {
+      @if (friend.status !== 'OFFLINE') {
+        <div class="group flex items-center justify-between p-2.5 rounded-md hover:bg-[#3f4147] cursor-pointer transition-all border-t border-white/5 first:border-none">
+          
+          <div class="flex items-center gap-3 overflow-hidden">
+            <div class="relative flex-shrink-0 w-8 h-8 rounded-full bg-[#5865f2] flex items-center justify-center text-white font-semibold">
+              {{ (friend.name?.charAt(0) || '?').toUpperCase() }}
+              
+              <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-[3px] border-[#313338] group-hover:border-[#3f4147] rounded-full transition-colors"
+                   [ngClass]="{
+                     'bg-[#23a559]': friend.status === 'ONLINE',
+                     'bg-[#f0b232]': friend.status === 'AWAY',
+                     'bg-[#f23f43]': friend.status === 'DO_NOT_DISTURB'
+                   }">
+              </div>
+            </div>
+
+            <div class="flex flex-col overflow-hidden leading-tight">
+              <span class="text-white text-[15px] font-bold truncate">{{ friend.name }}</span>
+              <span class="text-[#b5bac1] text-xs truncate italic">
+                {{ friend.status === 'ONLINE' ? 'En línea' : 
+                   friend.status === 'AWAY' ? 'Ausente' : 
+                   friend.status === 'DO_NOT_DISTURB' ? 'No molestar' : '' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              </div>
+        </div>
+      }
+    } @empty {
+      <div class="flex flex-col items-center justify-center mt-20 opacity-30">
+        <p class="text-[#b5bac1] text-sm italic">Nadie está disponible ahora mismo.</p>
+      </div>
+    }
+
+  </div>
+</div>

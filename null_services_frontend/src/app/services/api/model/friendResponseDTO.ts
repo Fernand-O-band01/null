@@ -12,5 +12,16 @@
 export interface FriendResponseDTO { 
     id?: number;
     name?: string;
+    status?: FriendResponseDTO.StatusEnum;
 }
+export namespace FriendResponseDTO {
+    export const StatusEnum = {
+        Online: 'ONLINE',
+        Offline: 'OFFLINE',
+        Away: 'AWAY',
+        DoNotDisturb: 'DO_NOT_DISTURB'
+    } as const;
+    export type StatusEnum = typeof StatusEnum[keyof typeof StatusEnum];
+}
+
 

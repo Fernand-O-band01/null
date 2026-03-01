@@ -13,5 +13,16 @@ export interface AuthenticationResponse {
     token?: string;
     nickname?: string;
     email?: string;
+    status?: AuthenticationResponse.StatusEnum;
 }
+export namespace AuthenticationResponse {
+    export const StatusEnum = {
+        Online: 'ONLINE',
+        Offline: 'OFFLINE',
+        Away: 'AWAY',
+        DoNotDisturb: 'DO_NOT_DISTURB'
+    } as const;
+    export type StatusEnum = typeof StatusEnum[keyof typeof StatusEnum];
+}
+
 

@@ -1,20 +1,42 @@
-<div class="flex-1 flex items-center justify-between h-full pr-3">
+<div class="flex-1 flex items-center justify-between h-full pr-3 relative">
   
-  <div class="flex items-center gap-2 hover:bg-[#3f4147] p-1 rounded-md cursor-pointer transition-colors flex-1 min-w-0 mr-2">
+@if (isStatusMenuOpen) {
+    <app-user-panel-pop-up 
+      [username]="username"
+      [currentStatus]="currentStatus"
+      (statusSelected)="onStatusChange($event)">
+    </app-user-panel-pop-up>
+  }
+
+  <div (click)="toggleStatusMenu()" class="flex items-center gap-2 hover:bg-[#3f4147] p-1 rounded-md cursor-pointer transition-colors flex-1 min-w-0 mr-2">
+    
     <div class="relative w-8 h-8 rounded-full bg-[#5865F2] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
       {{ username ? username.charAt(0).toUpperCase() : 'U' }}
-      <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#23A559] border-[3px] border-[#232428] rounded-full"></div>
+      
+      <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-[3px] border-[#232428] rounded-full transition-colors"
+           [ngClass]="{
+             'bg-[#23a559]': currentStatus === 'ONLINE',
+             'bg-[#f0b232]': currentStatus === 'AWAY',
+             'bg-[#f23f43]': currentStatus === 'DO_NOT_DISTURB',
+             'bg-[#80848e]': currentStatus === 'OFFLINE'
+           }">
+      </div>
     </div>
     
     <div class="flex flex-col overflow-hidden flex-1 min-w-0">
       <span class="text-white text-sm font-bold truncate leading-none mb-1">{{ username }}</span>
-      <span class="text-[#B5BAC1] text-[11px] truncate leading-none">En línea</span>
+      
+      <span class="text-[#B5BAC1] text-[11px] truncate leading-none">
+        {{ currentStatus === 'ONLINE' ? 'En línea' :
+           currentStatus === 'AWAY' ? 'Ausente' :
+           currentStatus === 'DO_NOT_DISTURB' ? 'No molestar' : 'Invisible' }}
+      </span>
     </div>
   </div>
 
   <div class="flex items-center flex-shrink-0">
     <button 
-      (click)="logout()" 
+      (click)="$event.stopPropagation(); logout()" 
       title="Cerrar Sesión" 
       class="w-8 h-8 flex items-center justify-center rounded text-[#B5BAC1] hover:bg-[#3f4147] hover:text-[#F23F42] transition-colors focus:outline-none">
       

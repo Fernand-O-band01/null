@@ -41,6 +41,10 @@ export class Login {
           this.nickService.setNickname(response.nickname);
         }
 
+        if(response.status){
+          localStorage.setItem('userStatus', response.status)
+        }
+
         console.log('Inicio de Sesion Exitoso', response);
         this.router.navigate(['/home']);
 
