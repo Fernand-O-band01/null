@@ -4,6 +4,7 @@ import { Main } from './pages/main/main';
 import { authGuard } from '../../services/api/guard/authguard';
 import { Home } from './pages/home/home/home';
 import { DiscoverServers } from './pages/discover-servers/discover-servers';
+import { Server } from './pages/server/server/server';
 
 const routes: Routes = [
 
@@ -20,6 +21,11 @@ const routes: Routes = [
       {
         path: 'discover',
         component: DiscoverServers,
+        canActivate: [authGuard]
+      },
+      {
+        path: 'server/:serverId',
+        component: Server,
         canActivate: [authGuard]
       }
     ]

@@ -15,3 +15,7 @@
   </div>
 
 </div>
+
+@if (modalService.showSettings$ | async) {
+  <app-user-settings-modal></app-user-settings-modal>
+}

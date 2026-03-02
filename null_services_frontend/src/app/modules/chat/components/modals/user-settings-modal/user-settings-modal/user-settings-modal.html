@@ -1,0 +1,63 @@
+<div class="fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center font-sans select-none overflow-hidden text-[#b5bac1]"
+     (click)="closeModal()"> <div class="flex w-full max-w-[1400px] h-[92vh] max-h-[900px] rounded-lg shadow-2xl overflow-hidden relative"
+       (click)="$event.stopPropagation()"> <div class="w-[218px] bg-[#2b2d31] flex-shrink-0 pt-16 pb-10 flex flex-col items-end overflow-y-auto scrollbar-thin">
+      <div class="w-[192px] px-1.5 flex flex-col gap-1.5">
+        
+        <h2 class="px-2.5 text-[11px] font-bold uppercase tracking-wide text-[#949ba4] mb-1">Ajustes de usuario</h2>
+
+        <button class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#35373c] hover:text-[#dbdee1] transition-colors">
+          Mi cuenta
+        </button>
+        
+        <button class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#35373c] hover:text-[#dbdee1] transition-colors">
+          Perfil de usuario
+        </button>
+        
+        <button class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-semibold bg-[#404249] text-white">
+          Amigos
+        </button>
+        
+        <button class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-[#35373c] hover:text-[#dbdee1] transition-colors">
+          Cambiar de cuenta
+        </button>
+
+        <div class="h-[1px] bg-[#3f4147] my-2 mx-1"></div>
+
+        <button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-sm font-medium text-[#f23f43] hover:bg-[#4a3438] transition-colors">
+          Cerrar sesión
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012 2v2h-2V4H5v16h9v-2h2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2 0 012-2h9z"/></svg>
+        </button>
+
+      </div>
+    </div>
+
+    <div class="flex-1 bg-[#313338] overflow-y-auto pt-16 pb-10 px-10 relative">
+      
+      <div class="absolute top-16 right-10 flex flex-col items-center gap-2 cursor-pointer group"
+           (click)="closeModal()">
+        <div class="w-9 h-9 border-2 border-[#b5bac1] rounded-full flex items-center justify-center text-[#b5bac1] group-hover:border-[#dbdee1] group-hover:text-[#dbdee1] group-hover:bg-[#35373c] transition-all">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </div>
+        <span class="text-xs font-bold text-[#b5bac1] uppercase tracking-wide group-hover:text-[#dbdee1]">Esc</span>
+      </div>
+
+      <div class="max-w-[740px]">
+        <h1 class="text-white text-xl font-bold mb-5">Mi cuenta</h1>
+        
+        <div class="w-full rounded-lg bg-[#232428] overflow-hidden shadow-lg mb-6">
+            <div class="h-24 bg-[#c1c8de]"></div>
+            <div class="p-4 flex gap-4">
+                <div class="w-20 h-20 rounded-full bg-gray-700 -mt-12 border-4 border-[#232428]"></div>
+                <div class="flex-1">
+                    <h2 class="text-white text-xl font-bold">Tester Tester</h2>
+                    <span class="text-[#dbdee1] text-sm">tester1</span>
+                </div>
+            </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div> 
+</div> 
+

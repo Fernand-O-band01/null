@@ -1,19 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
+
 import { AuthService } from '../../../../services/api/authservice/auth-service';
-
 import { Websocket } from '../../../../services/api/websocket/websocket';
-
+import { AuthenticationResponse, UsersService } from '../../../../services/api';
+import { Modalservice } from '../../../../services/api/modalservice/modalservice';
 import { UserPanelPopUp } from './user-panel-pop-up/user-panel-pop-up/user-panel-pop-up';
-import { AuthenticationResponse } from '../../../../services/api';
-import { UsersService } from '../../../../services/api';
-
 
 @Component({
   selector: 'app-user-panel',
+  standalone: true, // ¡Ojo! Añadí standalone: true por si acaso, verifica si lo necesitas
   imports: [CommonModule, UserPanelPopUp],
   templateUrl: './user-panel.html',
   styleUrl: './user-panel.css',
@@ -26,15 +24,20 @@ export class UserPanel implements OnInit, OnDestroy {
   username: string = 'Usuario';
   private sub!: Subscription;
 
+  // 🚀 TUS VARIABLES ORIGINALES RESTAURADAS
   isStatusMenuOpen: boolean = false;
   currentStatus: AuthenticationResponse.StatusEnum = AuthenticationResponse.StatusEnum.Online;
+
+  // 🚀 LA NUEVA VARIABLE PARA EL ENGRANAJE
+  showSmallPanel: boolean = false;
 
   constructor(
     private router: Router,
     private nickService: AuthService,
     private userService: UsersService,
-    private ws: Websocket
-  ){}
+    private ws: Websocket,
+    private modalService: Modalservice
+  ) {}
 
   ngOnInit(): void {
     this.sub = this.nickService.nickname$.subscribe(nickname => {
@@ -42,41 +45,55 @@ export class UserPanel implements OnInit, OnDestroy {
     });
 
     const savedStatus = localStorage.getItem('userStatus');
-    if(savedStatus){
-      this.currentStatus = savedStatus as AuthenticationResponse.StatusEnum
+    if (savedStatus) {
+      this.currentStatus = savedStatus as AuthenticationResponse.StatusEnum;
     }
   }
 
-  ngOnDestroy() {
-    if(this.sub) {
+  ngOnDestroy(): void {
+    if (this.sub) {
       this.sub.unsubscribe();
     }
   }
   
-  toggleStatusMenu() {
+  // 🚀 TU FUNCIÓN ORIGINAL RESTAURADA (Y conectada al engranaje)
+  toggleStatusMenu(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
     this.isStatusMenuOpen = !this.isStatusMenuOpen;
+    
+    // Sincronizamos la variable del engranaje para que se bloquee
+    this.showSmallPanel = this.isStatusMenuOpen; 
   }
 
-  onStatusChange(newStatus: AuthenticationResponse.StatusEnum) {
-  this.isStatusMenuOpen = false; 
-
-  const previousStatus = this.currentStatus;
-  this.currentStatus = newStatus;
-
-  localStorage.setItem('userStatus', newStatus)
-
-  // Llamamos al servicio real que me acabas de mostrar
-  this.userService.updateStatus(newStatus as any).subscribe({
-    next: () => console.log(`Estado guardado en BD: ${newStatus}`),
-    error: (err) => {
-      console.error('Error al guardar el estado', err);
-      this.currentStatus = previousStatus;
+  openSettingsModal(): void {
+    // El candado de seguridad
+    if (this.showSmallPanel || this.isStatusMenuOpen) {
+      return; 
     }
-  });
-}
+    this.modalService.openSettings();
+  }
 
+  onStatusChange(newStatus: AuthenticationResponse.StatusEnum): void {
+    this.isStatusMenuOpen = false; 
+    this.showSmallPanel = false; // Liberamos el engranaje
 
-  logout(){
+    const previousStatus = this.currentStatus;
+    this.currentStatus = newStatus;
+
+    localStorage.setItem('userStatus', newStatus);
+
+    this.userService.updateStatus(newStatus as any).subscribe({
+      next: () => console.log(`Estado guardado en BD: ${newStatus}`),
+      error: (err) => {
+        console.error('Error al guardar el estado', err);
+        this.currentStatus = previousStatus;
+      }
+    });
+  }
+
+  logout(): void {
     console.log('Cerrando sesion...');
 
     if (this.ws.rxStomp.active) {
@@ -84,10 +101,8 @@ export class UserPanel implements OnInit, OnDestroy {
     }
 
     localStorage.removeItem('token');
-    localStorage.removeItem('userStatus')
+    localStorage.removeItem('userStatus');
     this.nickService.clearSesion();
     this.router.navigate(['/login']);
   }
-
 }
-
