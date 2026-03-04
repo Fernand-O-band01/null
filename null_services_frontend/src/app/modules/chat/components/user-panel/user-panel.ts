@@ -11,7 +11,7 @@ import { UserPanelPopUp } from './user-panel-pop-up/user-panel-pop-up/user-panel
 
 @Component({
   selector: 'app-user-panel',
-  standalone: true, // ¡Ojo! Añadí standalone: true por si acaso, verifica si lo necesitas
+  standalone: true,
   imports: [CommonModule, UserPanelPopUp],
   templateUrl: './user-panel.html',
   styleUrl: './user-panel.css',
@@ -24,12 +24,12 @@ export class UserPanel implements OnInit, OnDestroy {
   username: string = 'Usuario';
   private sub!: Subscription;
 
-  // 🚀 TUS VARIABLES ORIGINALES RESTAURADAS
   isStatusMenuOpen: boolean = false;
   currentStatus: AuthenticationResponse.StatusEnum = AuthenticationResponse.StatusEnum.Online;
-
-  // 🚀 LA NUEVA VARIABLE PARA EL ENGRANAJE
   showSmallPanel: boolean = false;
+
+  // 🚀 NUEVA VARIABLE: Guardamos el usuario completo
+  currentUser: AuthenticationResponse | null = null;
 
   constructor(
     private router: Router,
@@ -40,14 +40,14 @@ export class UserPanel implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.sub = this.nickService.nickname$.subscribe(nickname => {
-      this.username = nickname;
+    // 🚀 1. MAGIA REACTIVA: Nos suscribimos al objeto global
+    this.sub = this.nickService.currentUser$.subscribe(user => {
+      if (user) {
+        this.currentUser = user;
+        this.username = user.nickname || 'Usuario';
+        this.currentStatus = user.status || AuthenticationResponse.StatusEnum.Online;
+      }
     });
-
-    const savedStatus = localStorage.getItem('userStatus');
-    if (savedStatus) {
-      this.currentStatus = savedStatus as AuthenticationResponse.StatusEnum;
-    }
   }
 
   ngOnDestroy(): void {
@@ -56,19 +56,15 @@ export class UserPanel implements OnInit, OnDestroy {
     }
   }
   
-  // 🚀 TU FUNCIÓN ORIGINAL RESTAURADA (Y conectada al engranaje)
   toggleStatusMenu(event?: Event): void {
     if (event) {
       event.stopPropagation();
     }
     this.isStatusMenuOpen = !this.isStatusMenuOpen;
-    
-    // Sincronizamos la variable del engranaje para que se bloquee
     this.showSmallPanel = this.isStatusMenuOpen; 
   }
 
   openSettingsModal(): void {
-    // El candado de seguridad
     if (this.showSmallPanel || this.isStatusMenuOpen) {
       return; 
     }
@@ -77,18 +73,20 @@ export class UserPanel implements OnInit, OnDestroy {
 
   onStatusChange(newStatus: AuthenticationResponse.StatusEnum): void {
     this.isStatusMenuOpen = false; 
-    this.showSmallPanel = false; // Liberamos el engranaje
+    this.showSmallPanel = false;
 
+    // Guardamos el estado anterior por si falla la llamada al backend
     const previousStatus = this.currentStatus;
-    this.currentStatus = newStatus;
-
-    localStorage.setItem('userStatus', newStatus);
+    
+    // 🚀 2. Actualizamos de forma reactiva a través del servicio central
+    this.nickService.updateLocalStatus(newStatus);
 
     this.userService.updateStatus(newStatus as any).subscribe({
       next: () => console.log(`Estado guardado en BD: ${newStatus}`),
       error: (err) => {
         console.error('Error al guardar el estado', err);
-        this.currentStatus = previousStatus;
+        // 🚀 Si falla, revertimos usando el mismo servicio central
+        this.nickService.updateLocalStatus(previousStatus);
       }
     });
   }
@@ -100,8 +98,7 @@ export class UserPanel implements OnInit, OnDestroy {
       this.ws.rxStomp.deactivate();
     }
 
-    localStorage.removeItem('token');
-    localStorage.removeItem('userStatus');
+    // 🚀 3. El servicio central se encarga de limpiar TODO (token, usuario, etc.)
     this.nickService.clearSesion();
     this.router.navigate(['/login']);
   }

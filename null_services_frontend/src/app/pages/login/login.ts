@@ -27,35 +27,29 @@ export class Login {
     private router: Router,
     private tokenService: Token,
     private nickService: AuthService
-  ) {
-    
-  }
+  ) {}
 
   login() {
     this.errorMessage = [];
     this.authService.authenticate(this.authRequest).subscribe({
       next: (response) => {
+        // 1. Guardamos el token
         this.tokenService.token = response.token as string;
 
-        if(response.nickname) {
-          this.nickService.setNickname(response.nickname);
-        }
-
-        if(response.status){
-          localStorage.setItem('userStatus', response.status)
-        }
+        // 🚀 2. LA MAGIA: Ya no usamos setNickname ni guardamos el status a mano.
+        // Le pasamos toda la respuesta al servicio central para que él se encargue de todo.
+        this.nickService.setCurrentUser(response);
 
         console.log('Inicio de Sesion Exitoso', response);
         this.router.navigate(['/home']);
 
       },
       error: (error) => {
-
         console.error('Error al iniciar sesión', error);
 
         if(error.error.ValidationErrors) {
           this.errorMessage = error.error.ValidationErrors
-        }else{
+        } else {
           this.errorMessage.push(error.error.message);
         }
 
