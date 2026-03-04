@@ -117,4 +117,19 @@ public class ServerController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Crea un nuevo canal en un servidor específico.
+     *
+     * @param serverId El ID del servidor padre.
+     * @param request Los datos del canal (nombre, tipo).
+     * @return El canal recién creado.
+     */
+    @PostMapping("/{serverId}/channels")
+    public ResponseEntity<ChannelResponse> createChannel(
+            @PathVariable Long serverId,
+            @RequestBody @Valid ChannelRequest request
+    ) {
+        return ResponseEntity.ok(serverService.createChannel(serverId, request));
+    }
+
 }

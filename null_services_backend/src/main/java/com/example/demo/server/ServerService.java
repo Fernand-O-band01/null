@@ -186,4 +186,42 @@ public class ServerService {
 
         serverRepository.save(server);
     }
+
+    /**
+     * Crea un nuevo canal dentro de un servidor existente.
+     *
+     * @param serverId ID del servidor padre.
+     * @param request Datos del nuevo canal.
+     * @return El objeto de respuesta del canal recién creado.
+     */
+    public ChannelResponse createChannel(Long serverId, ChannelRequest request) {
+        // 1. Buscamos el servidor
+        Server server = serverRepository.findById(serverId)
+                .orElseThrow(() -> new RuntimeException("Servidor no encontrado"));
+
+        // 2. Formateamos el nombre (minúsculas y guiones, estilo Discord)
+        String formattedName = request.getName().trim().toLowerCase().replaceAll("\\s+", "-");
+
+        // 3. Creamos la entidad Channel
+        Channel newChannel = Channel.builder()
+                .name(formattedName)
+                .type(request.getType() != null ? request.getType() : "TEXT")
+                .isPrivate(request.isPrivate())
+                .server(server)
+                .build();
+
+        // 4. Lo añadimos a la lista del servidor y guardamos
+        server.getChannels().add(newChannel);
+        serverRepository.save(server); // Esto guardará el canal por cascada si tienes CascadeType configurado, sino necesitas un ChannelRepository.
+
+        // IMPORTANTE: Si NO tienes CascadeType.ALL en la relación @OneToMany de Server a Channel,
+        // necesitarás inyectar un ChannelRepository y hacer: channelRepository.save(newChannel);
+
+        // 5. Retornamos la respuesta (puedes crear un helper o hacerlo manual)
+        return ChannelResponse.builder()
+                .id(newChannel.getId()) // Asegúrate de que tenga ID si no usaste CascadeType
+                .name(newChannel.getName())
+                .type(newChannel.getType())
+                .build();
+    }
 }

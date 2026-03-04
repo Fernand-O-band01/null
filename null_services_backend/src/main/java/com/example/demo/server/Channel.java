@@ -42,4 +42,9 @@ public class Channel {
     @JoinColumn(name = "server_id", nullable = false)
     private Server server;
 
+
+    //NUEVO: Para saber si el canal tiene "candadito"
+    @Column(name = "is_private")
+    private boolean isPrivate = false;
+
 }
