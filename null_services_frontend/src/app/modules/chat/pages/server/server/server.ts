@@ -1,105 +1,217 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
-import { ServerControllerService } from '../../../../../services/api';
-import { ServerResponse } from '../../../../../services/api';
-import { ChannelResponse } from '../../../../../services/api';
+import { ServerControllerService, ServerResponse, MessageControllerService, Message, AuthenticationService } from '../../../../../services/api';
+import { Websocket } from '../../../../../services/api/websocket/websocket';
+import { AuthService } from '../../../../../services/api/authservice/auth-service';
 
+/**
+ * Componente principal para la gestión de servidores.
+ * Controla la visualización de canales, lista de miembros y la lógica de chat en tiempo real.
+ */
 @Component({
   selector: 'app-server',
-  imports: [CommonModule, RouterModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './server.html',
   styleUrl: './server.css',
 })
-export class Server implements OnInit{
+export class Server implements OnInit, OnDestroy {
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
+  /**
+   * Compara de forma segura si el mensaje es del usuario actual.
+   * Usamos Number() para evitar errores si uno es String y el otro Number.
+   */
+  isItMe(sendId: any): boolean {
+    if (!sendId || !this.myUserId) return false;
+    return Number(sendId) === Number(this.myUserId);
+  }
+  
+
+  // Estado del Servidor
   currentServerId: number | null = null;
   serverData: ServerResponse | null = null;
   activeChannelId: number | null = null;
+  
+  // UI States
   isMembersListOpen: boolean = true;
-
   isServerMenuOpen: boolean = false;
+
+  // Chat State
+  messages: Message[] = [];
+  chatInput: string = '';
+  myUserId!: number;
+
+  /** Suscripción activa al topic de WebSocket del canal */
+  private topicSubscription?: Subscription;
+  /** Suscripción a los cambios de parámetros de la URL */
+  private routeSub?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private serverService: ServerControllerService,
+    private messageService: MessageControllerService,
+    private authService: AuthService,
+    private ws: Websocket,
     private cdr: ChangeDetectorRef
-  ){}
-
-  ngOnInit(): void {
-      this.route.paramMap.subscribe(param => {
-        const idStr = param.get('serverId');
-        if(idStr){
-          this.currentServerId = Number(idStr);
-          this.loadServerData(this.currentServerId);
-        }
-      })
+  ) {
+    // Recuperamos el ID del usuario desde nuestro servicio centralizado
+    this.myUserId = (this.authService as any).currentUserSubject?.value?.id || 0;
   }
 
-  loadServerData(id: number){
+  ngOnInit(): void {
+    // Escuchamos cambios en la URL (al cambiar de un servidor a otro)
+    this.routeSub = this.route.paramMap.subscribe(param => {
+      const idStr = param.get('serverId');
+      if (idStr) {
+        this.currentServerId = Number(idStr);
+        this.loadServerData(this.currentServerId);
+      }
+    });
+  }
 
+  /**
+   * Carga la información completa del servidor y selecciona el primer canal por defecto.
+   * @param id ID del servidor a cargar.
+   */
+  loadServerData(id: number): void {
     this.serverData = null;
     this.isServerMenuOpen = false;
 
     this.serverService.findServerById(id).subscribe({
       next: (data: ServerResponse) => {
-        console.log('Server load successfully', data);
         this.serverData = data;
-
-        if(data.channels && data.channels.length > 0){
-          this.activeChannelId = data.channels[0].id || null;
-        }else{
+        if (data.channels && data.channels.length > 0) {
+          // Al entrar al servidor, seleccionamos el primer canal automáticamente
+          this.selectChannel(data.channels[0].id);
+        } else {
           this.activeChannelId = null;
         }
-
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.log('Failed to load server', err);
-        
-      }
-    })
+      error: (err) => console.error('Failed to load server', err)
+    });
   }
 
+  /**
+   * Cambia el canal activo, carga su historial y actualiza la suscripción al WebSocket.
+   * @param channelId ID del canal seleccionado.
+   */
+  selectChannel(channelId: number | undefined): void {
+    if (channelId === undefined) return;
+    
+    this.activeChannelId = channelId;
+    this.loadChannelHistory(channelId);
+    this.connectToChannelTopic(channelId);
+  }
 
-  leaveServer(): void{
-    if(!this.currentServerId) return
+  /**
+   * Carga el historial de mensajes de MongoDB para el canal específico.
+   */
+  private loadChannelHistory(channelId: number): void {
+    this.messageService.getChannelHistory(channelId as any).subscribe({
+      next: (history) => {
+        this.messages = history;
+        this.cdr.detectChanges();
+        setTimeout(() => this.scrollToBottom(), 50);
+      },
+      error: (err) => console.error('Error loading channel history', err)
+    });
+  }
+
+  /**
+   * Gestiona la conexión en tiempo real mediante WebSockets (vía Kafka).
+   */
+  private connectToChannelTopic(channelId: number): void {
+    if (this.topicSubscription) {
+      this.topicSubscription.unsubscribe();
+    }
+
+    const topic = `/topic/channel.${channelId}`;
+    this.topicSubscription = this.ws.rxStomp.watch(topic).subscribe((message) => {
+      const receivedMsg: Message = JSON.parse(message.body);
+      
+      // Verificación de duplicados para evitar eco del socket
+      if (!this.messages.some(m => m.id === receivedMsg.id)) {
+        this.messages.push(receivedMsg);
+        this.cdr.detectChanges();
+        setTimeout(() => this.scrollToBottom(), 50);
+      }
+    });
+  }
+
+  /**
+   * Envía un nuevo mensaje al canal actual.
+   */
+  sendMessage(): void {
+    if (!this.chatInput.trim() || !this.activeChannelId) return;
+
+    const payload: Message = {
+      content: this.chatInput,
+      channelId: this.activeChannelId as any, // Discriminador para el backend
+      sendId: this.myUserId
+    };
+
+    const tempInput = this.chatInput;
+    this.chatInput = ''; // Limpieza rápida del input (Optimistic UI)
+
+    this.messageService.sendMessage(payload).subscribe({
+      next: (savedMsg) => {
+        if (!this.messages.some(m => m.id === savedMsg.id)) {
+          this.messages.push(savedMsg);
+          this.cdr.detectChanges();
+          setTimeout(() => this.scrollToBottom(), 50);
+        }
+      },
+      error: (err) => {
+        console.error('Error sending message', err);
+        this.chatInput = tempInput; // Revertimos en caso de error
+      }
+    });
+  }
+
+  /**
+   * Realiza el scroll automático al final del contenedor de mensajes.
+   */
+  private scrollToBottom(): void {
+    try {
+      if (this.scrollContainer) {
+        this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+      }
+    } catch (err) {}
+  }
+
+  /**
+   * Obtiene el nombre del canal activo para mostrarlo en la cabecera.
+   */
+  getActiveChannelName(): string {
+    if (!this.serverData?.channels || !this.activeChannelId) return 'general';
+    const channel = this.serverData.channels.find(c => c.id === this.activeChannelId);
+    return channel?.name || 'general';
+  }
+
+  leaveServer(): void {
+    if (!this.currentServerId) return;
 
     this.serverService.leaveServer(this.currentServerId).subscribe({
       next: () => {
-        console.log('You has leave the server');
-        window.dispatchEvent(new CustomEvent('server-joined'))
-        this.router.navigate(['/home'])
+        window.dispatchEvent(new CustomEvent('server-joined'));
+        this.router.navigate(['/home']);
       },
-      error: (err) => {
-        console.log('failed leaving the server', err);
-        
-      }
-    })
-
+      error: (err) => console.error('failed leaving the server', err)
+    });
   }
 
+  toggleServerMenu(): void { this.isServerMenuOpen = !this.isServerMenuOpen; }
+  toggleMembersList(): void { this.isMembersListOpen = !this.isMembersListOpen; }
 
-  toggleServerMenu(): void {
-    this.isServerMenuOpen = !this.isServerMenuOpen;
+  ngOnDestroy(): void {
+    this.topicSubscription?.unsubscribe();
+    this.routeSub?.unsubscribe();
   }
-
-  selectChannel(channelId: number | undefined): void{
-    if(channelId !== undefined){
-      this.activeChannelId = channelId
-    }
-  }
-
-  toggleMembersList(): void {
-    this.isMembersListOpen = !this.isMembersListOpen;
-  }
-
-  getActiveChannelName(){
-    if(!this.serverData?.channels || !this.activeChannelId) return 'general'
-    const channel = this.serverData.channels.find(c => c.id === this.activeChannelId);
-    return channel ? channel.name || 'general' : 'general';
-  }
-
 }

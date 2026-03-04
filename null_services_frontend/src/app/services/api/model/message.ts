@@ -13,6 +13,7 @@ export interface Message {
     id?: string;
     content?: string;
     sendId?: number;
+    senderNickname?: string;
     conversationId?: number;
     channelId?: number;
     timestamp?: string;

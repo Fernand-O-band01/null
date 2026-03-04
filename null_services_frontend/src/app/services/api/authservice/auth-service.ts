@@ -8,6 +8,7 @@ import { AuthenticationResponse } from '../model/authenticationResponse';
 })
 export class AuthService {
 
+  
   // 1. Buscamos el objeto completo en localStorage (si existe)
   private getInitialUser(): AuthenticationResponse | null {
     const storedUser = localStorage.getItem('currentUser');

@@ -26,6 +26,8 @@ public class Message {
     private String content;
     private Integer sendId; // Quien lo envía
 
+    private String senderNickname;
+
     private Long conversationId; // 👈 Si tiene este, es un Mensaje Directo
 
     // 🚀 NUEVO: El ID del canal del servidor
