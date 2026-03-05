@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { RxStomp, RxStompConfig } from '@stomp/rx-stomp';
 
+// 🚀 1. Importamos el environment
+import { environment } from '../../../../environments/environment'; // <-- Ajusta los '../' según tu estructura
+
 @Injectable({
   providedIn: 'root',
 })
@@ -23,7 +26,9 @@ export class Websocket {
     }
 
     const rxStompConfig: RxStompConfig = {
-      brokerURL: 'ws://localhost:8088/api/v1/ws',
+      // 🚀 2. LA MAGIA: Usamos la URL del Gateway dinámicamente
+      brokerURL: environment.wsUrl, 
+      
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },
@@ -37,6 +42,6 @@ export class Websocket {
 
     this.rxStomp.configure(rxStompConfig);
     this.rxStomp.activate();
-    console.log('🔌 WebSocket activado con Token!');
+    console.log('🔌 WebSocket activado a través del Gateway!');
   }
 }

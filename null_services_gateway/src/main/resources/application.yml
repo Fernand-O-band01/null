@@ -1,0 +1,34 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: null-service-gateway
+  cloud:
+    gateway:
+      # 1. Limpiamos los headers duplicados
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+      # 2. CORS Global ultra-permisivo para tu frontend
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:4200"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      routes:
+        # ? 3. PRIMERO: Atrapamos el WebSocket (Ruta específica)
+        - id: chat-websocket-route
+          uri: ws://localhost:8088
+          predicates:
+            - Path=/api/v1/ws/**
+
+        # ? 4. SEGUNDO: Atrapamos TODO el resto del tráfico REST
+        - id: main-backend-route
+          uri: http://localhost:8088
+          predicates:
+            - Path=/**
