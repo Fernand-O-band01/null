@@ -72,6 +72,22 @@ services:
     networks:
       - null-network-project
 
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit-server
+    command: --dev
+    environment:
+      # 🚀 El Fix: Inyectamos la limitación de puertos directamente a su configuración interna
+      - LIVEKIT_CONFIG={"rtc":{"port_range_start":50000,"port_range_end":50050}}
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+      - "50000-50050:50000-50050/udp" # Rango seguro para que Docker Desktop no explote
+    restart: unless-stopped
+    networks:
+      - null-network-project
+
 networks:
   null-network-project:
     driver: bridge

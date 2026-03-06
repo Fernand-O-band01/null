@@ -31,6 +31,16 @@ export class ChatRoom implements OnChanges, OnDestroy {
 
   private topicSubscription?: Subscription;
 
+  // 🚀 Objeto temporal para el panel lateral (Después lo traerás de tu Backend)
+  friendProfile = {
+    avatar: '', 
+    bannerColor: '#5865F2', 
+    pronouns: 'Él/Lo',
+    bio: 'Resolviendo problemas de WebSockets a altas horas de la noche. ☕',
+    memberSince: 'Marzo 2026',
+    mutualServers: 1
+  };
+
   constructor(
     private messageService: MessageControllerService,
     private wsService: Websocket,
