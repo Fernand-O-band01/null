@@ -58,6 +58,9 @@ export class ChatRoom implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['conversationId'] && this.conversationId) {
+
+      this.wsService.conectar();
+
       this.loadChatHistory();
       this.connectToRoom();
     }

@@ -45,7 +45,7 @@ application:
     frontend:
       activation-url: http://localhost:4200/activate-account
   cors:
-    allowed-origins: htpp://localhost:4200
+    allowed-origins: http://localhost:4200
 
 logging:
   level:

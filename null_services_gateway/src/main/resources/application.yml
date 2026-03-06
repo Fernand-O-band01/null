@@ -21,13 +21,13 @@ spring:
             allowCredentials: true
 
       routes:
-        # ? 3. PRIMERO: Atrapamos el WebSocket (Ruta específica)
+        # ? 3. PRIMERO: Atrapamos el WebSocket (Ruta especï¿½fica)
         - id: chat-websocket-route
           uri: ws://localhost:8088
           predicates:
             - Path=/api/v1/ws/**
 
-        # ? 4. SEGUNDO: Atrapamos TODO el resto del tráfico REST
+        # ? 4. SEGUNDO: Atrapamos TODO el resto del trï¿½fico REST
         - id: main-backend-route
           uri: http://localhost:8088
           predicates:

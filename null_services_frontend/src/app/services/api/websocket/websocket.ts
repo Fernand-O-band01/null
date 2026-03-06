@@ -32,11 +32,11 @@ export class Websocket {
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },
-      heartbeatIncoming: 0,
+      heartbeatIncoming: 20000,
       heartbeatOutgoing: 20000,
-      reconnectDelay: 5000,
+      reconnectDelay: 1000,
       debug: (msg: string): void => {
-        // console.log(new Date(), msg);
+        console.log(new Date(), msg);
       },
     };
 

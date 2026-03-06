@@ -62,6 +62,9 @@ export class Server implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+
+    this.ws.conectar();
+
     this.routeSub = this.route.paramMap.subscribe(param => {
       const idStr = param.get('serverId');
       if (idStr) {
@@ -116,7 +119,7 @@ export class Server implements OnInit, OnDestroy {
       this.topicSubscription.unsubscribe();
     }
 
-    const topic = `/topic/channel.${channelId}`;
+    const topic = `/topic/channel/${channelId}`;
     this.topicSubscription = this.ws.rxStomp.watch(topic).subscribe((message) => {
       const receivedMsg: Message = JSON.parse(message.body);
       
