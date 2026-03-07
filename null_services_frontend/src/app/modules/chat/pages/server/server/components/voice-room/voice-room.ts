@@ -14,4 +14,6 @@ export class VoiceRoom {
   // 🏷️ Recibe el nombre del canal para mostrarlo arriba
   @Input({ required: true }) channelName: string = '';
 
+  @Input ({required: true}) serverName: string = '';
+
 }

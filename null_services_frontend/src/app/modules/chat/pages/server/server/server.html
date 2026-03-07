@@ -71,12 +71,18 @@
     </div>
 
     @if (currentVoiceRoom) {
-      <div class="fixed bottom-[70px] left-0 right-0 bg-[#232428] border-t border-[#1e1f22]">
-      <app-voice-control-panel 
+      <div class="fixed bottom-[70px] left-2 w-[360px] h-[122px] z-[1000] bg-[#232428] border-b border-[#313338] rounded-lg shadow-2xl flex items-center justify-center flex-col">
+      
+        <app-voice-control-panel 
           [channelName]="getActiveChannelName()"
-          (onDisconnect)="leaveVoiceChannel()">
+          [serverName]="getServerName()"
+          (onDisconnect)="leaveVoiceChannel()"
+          class="w-full"
+          >
       </app-voice-control-panel>
       </div>
+
+    
     }
 
   </div>
@@ -103,7 +109,9 @@
         <app-voice-room 
           class="flex-1 overflow-hidden"
           [participants]="voiceParticipants" 
-          [channelName]="getActiveChannelName()">
+          [channelName]="getActiveChannelName()"
+          [serverName]="getServerName()"
+          >
         </app-voice-room>
 
       } @else {

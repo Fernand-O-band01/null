@@ -331,6 +331,12 @@ export class Server implements OnInit, OnDestroy {
     return channel?.name || 'general';
   }
 
+  getServerName(): string{
+    if(!this.serverData?.name || !this.activeChannelId) return 'MyServer';
+    const server = this.serverData.name
+    return server
+  }
+
   isOwner(): boolean {
     if (!this.serverData || !this.serverData.ownerId || !this.myUserId) return false;
     return Number(this.serverData.ownerId) === Number(this.myUserId);
