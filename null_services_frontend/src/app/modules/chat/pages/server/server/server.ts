@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,10 +17,20 @@ import { VoiceControllerService } from '../../../../../services/api/api/voiceCon
 import { VoiceControlPanel } from './components/voice-control-panel/voice-control-panel';
 import { VoiceRoom } from './components/voice-room/voice-room';
 
-/**
- * Componente principal para la gestión de servidores.
- * Controla la visualización de canales, lista de miembros y la lógica de chat en tiempo real.
- */
+// Interfaces STOMP
+export interface VoiceJoinRequest {
+  channelId: number;
+  userId: number;
+  username: string;
+  imageUrl: string;
+}
+
+export interface VoiceParticipant {
+  userId: number;
+  username: string;
+  imageUrl: string;
+}
+
 @Component({
   selector: 'app-server',
   standalone: true,
@@ -31,7 +41,6 @@ import { VoiceRoom } from './components/voice-room/voice-room';
     DeleteServerModal,
     VoiceControlPanel,
     VoiceRoom
-  
   ],
   templateUrl: './server.html',
   styleUrl: './server.css',
@@ -44,16 +53,13 @@ export class Server implements OnInit, OnDestroy {
     return Number(sendId) === Number(this.myUserId);
   }
   
-  // Estado del Servidor
   currentServerId: number | null = null;
   serverData: ServerResponse | null = null;
   activeChannelId: number | null = null;
   
-  // UI States
   isMembersListOpen: boolean = true;
   isServerMenuOpen: boolean = false;
 
-  // Chat State
   messages: Message[] = [];
   chatInput: string = '';
   myUserId!: number;
@@ -62,9 +68,12 @@ export class Server implements OnInit, OnDestroy {
   private routeSub?: Subscription;
 
   currentVoiceRoom: Room | null = null;
+  connectedVoiceChannelId: number | null = null; 
 
-  // 👥 Lista de personas conectadas al audio
   voiceParticipants: any[] = [];
+
+  globalVoiceState: { [key: number]: VoiceParticipant[] } = {};
+  private voicePresenceSub?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -75,13 +84,13 @@ export class Server implements OnInit, OnDestroy {
     private ws: Websocket,
     private cdr: ChangeDetectorRef,
     private tokenService: Token,
-    private voiceService: VoiceControllerService
+    private voiceService: VoiceControllerService,
+    private ngZone: NgZone // 🚀 NUEVO: Inyectamos NgZone para despertar a Angular
   ) {
     this.myUserId = this.authService.getMyUserId()
   }
 
   ngOnInit(): void {
-
     this.ws.conectar();
 
     this.routeSub = this.route.paramMap.subscribe(param => {
@@ -93,12 +102,32 @@ export class Server implements OnInit, OnDestroy {
     });
   }
 
+  private connectToVoicePresence(serverId: number): void {
+    if (this.voicePresenceSub) {
+      this.voicePresenceSub.unsubscribe();
+    }
+
+    const topic = `/topic/server/${serverId}/voice-presence`;
+    this.voicePresenceSub = this.ws.rxStomp.watch(topic).subscribe((message) => {
+      // 🚀 Envolvemos en NgZone para repintar la barra lateral global
+      this.ngZone.run(() => {
+        this.globalVoiceState = JSON.parse(message.body);
+        this.cdr.detectChanges();
+      });
+    });
+
+    setTimeout(() => {
+      this.ws.rxStomp.publish({ destination: `/app/server/${serverId}/voice/sync` });
+    }, 300);
+  }
+
   loadServerData(id: number): void {
     this.serverData = null;
     this.isServerMenuOpen = false;
-
     this.messages = [];
     this.activeChannelId = null;
+
+    this.connectToVoicePresence(id); 
 
     this.serverService.findServerById(id).subscribe({
       next: (data: ServerResponse) => {
@@ -114,40 +143,58 @@ export class Server implements OnInit, OnDestroy {
     });
   }
 
-
   selectChannel(channelId: number | undefined): void {
     if (channelId === undefined || !this.serverData?.channels) return;
     
-    // Buscamos el canal completo para saber su tipo
     const channel = this.serverData.channels.find(c => c.id === channelId);
     if (!channel) return;
 
     this.activeChannelId = channelId;
 
     if (channel.type === 'VOICE') {
-      // 🎙️ ES UN CANAL DE VOZ
       console.log('🎙️ Entrando a canal de voz:', channel.name);
       this.joinVoiceChannel(channelId);
     } else {
-      // 💬 ES UN CANAL DE TEXTO
-      this.leaveVoiceChannel(); // Apagamos el micro si veníamos de un canal de voz
+      this.leaveVoiceChannel(); 
       this.loadChannelHistory(channelId);
       this.connectToChannelTopic(channelId);
     }
+
+    this.cdr.detectChanges(); 
   }
 
-  // 🚀 Helper para saber si dibujamos el chat o la sala de voz
   getActiveChannelType(): string {
     if (!this.serverData?.channels || !this.activeChannelId) return 'TEXT';
     const channel = this.serverData.channels.find(c => c.id === this.activeChannelId);
     return channel?.type || 'TEXT';
   }
 
-
   joinVoiceChannel(channelId: number): void {
-    this.leaveVoiceChannel(); // Limpieza previa
+    if (this.connectedVoiceChannelId === channelId) return;
+
+    this.leaveVoiceChannel(); 
+    
+    this.connectedVoiceChannelId = channelId;
 
     console.log(`🎟️ Solicitando boleto VIP para el canal de voz ${channelId}...`);
+
+    if (this.currentServerId) {
+      const myMemberData = this.serverData?.members?.find((m: any) => Number(m.id) === Number(this.myUserId));
+      const realUsername = myMemberData?.username || 'Usuario ' + this.myUserId;
+      const realImageUrl = myMemberData?.imageUrl || '';
+
+      const joinRequest: VoiceJoinRequest = {
+        channelId: channelId,
+        userId: this.myUserId,
+        username: realUsername, 
+        imageUrl: realImageUrl
+      };
+
+      this.ws.rxStomp.publish({
+        destination: `/app/server/${this.currentServerId}/voice/join`,
+        body: JSON.stringify(joinRequest)
+      });
+    }
 
     this.voiceService.getVoiceToken(channelId.toString()).subscribe({
       next: async (response: any) => {
@@ -160,15 +207,29 @@ export class Server implements OnInit, OnDestroy {
     });
   }
 
+  isUserSpeaking(userId: number, username: string): boolean {
+    if (!this.currentVoiceRoom || this.voiceParticipants.length === 0) return false;
+
+    if (this.isItMe(userId)) {
+      const myLocalAudio = this.voiceParticipants.find(vp => vp.isLocal);
+      return myLocalAudio ? myLocalAudio.isSpeaking : false;
+    }
+
+    const remoteAudio = this.voiceParticipants.find(vp => 
+      vp.identity === username || 
+      vp.identity.includes(username) 
+    );
+    return remoteAudio ? remoteAudio.isSpeaking : false;
+  }
+
   async connectToLiveKit(token: string) {
     this.currentVoiceRoom = new Room();
 
-    // 🚀 AÑADIDO: Escuchar quién entra, quién sale y quién está hablando
-    this.currentVoiceRoom.on(RoomEvent.ParticipantConnected, () => this.updateParticipants());
-    this.currentVoiceRoom.on(RoomEvent.ParticipantDisconnected, () => this.updateParticipants());
-    this.currentVoiceRoom.on(RoomEvent.ActiveSpeakersChanged, () => this.updateParticipants());
+    // 🚀 Envolvemos los eventos de LiveKit en NgZone para repintar el cuarto de voz central
+    this.currentVoiceRoom.on(RoomEvent.ParticipantConnected, () => this.ngZone.run(() => this.updateParticipants()));
+    this.currentVoiceRoom.on(RoomEvent.ParticipantDisconnected, () => this.ngZone.run(() => this.updateParticipants()));
+    this.currentVoiceRoom.on(RoomEvent.ActiveSpeakersChanged, () => this.ngZone.run(() => this.updateParticipants()));
 
-    // 🎧 Escuchar cuando alguien habla
     this.currentVoiceRoom.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
       if (track.kind === Track.Kind.Audio) {
         console.log(`🔊 Recibiendo audio de: ${participant.identity}`);
@@ -182,15 +243,12 @@ export class Server implements OnInit, OnDestroy {
     });
 
     try {
-      // 🌐 Conectar al Docker
       const livekitUrl = 'ws://127.0.0.1:7880';
       await this.currentVoiceRoom.connect(livekitUrl, token);
       console.log('✅ Conectados exitosamente al servidor LiveKit');
 
-      // 🚀 AÑADIDO: Actualizamos la lista por primera vez al entrar
       this.updateParticipants();
 
-      // 🎙️ Encender nuestro micrófono
       await this.currentVoiceRoom.localParticipant.setMicrophoneEnabled(true, {
         echoCancellation: true,
         noiseSuppression: true,
@@ -208,24 +266,36 @@ export class Server implements OnInit, OnDestroy {
 
   leaveVoiceChannel() {
     if (this.currentVoiceRoom) {
+      
+      if (this.connectedVoiceChannelId && this.currentServerId) {
+        this.ws.rxStomp.publish({
+          destination: `/app/server/${this.currentServerId}/voice/leave`,
+          body: JSON.stringify({
+            channelId: this.connectedVoiceChannelId,
+            userId: this.myUserId
+          })
+        });
+      }
+
       this.currentVoiceRoom.disconnect();
       this.currentVoiceRoom = null;
+      this.connectedVoiceChannelId = null; 
+
+      this.voiceParticipants = [];
+
       console.log('🔇 Desconectado del canal de voz');
       this.cdr.detectChanges();
     }
   }
 
-  // 🚀 Actualiza la lista visual de avatares cada vez que alguien entra, sale o habla
   updateParticipants() {
     if (!this.currentVoiceRoom) return;
     
-    // Combinamos tu usuario local con los usuarios remotos
     const participants = [
       this.currentVoiceRoom.localParticipant,
       ...Array.from(this.currentVoiceRoom.remoteParticipants.values())
     ];
     
-    // Mapeamos los datos para que el componente voice-room los entienda fácil
     this.voiceParticipants = participants.map(p => ({
       identity: p.identity,
       isSpeaking: p.isSpeaking,
@@ -235,6 +305,24 @@ export class Server implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  // 🚀 NUEVO: Decide qué lista mostrar en la pantalla central dependiendo de si estamos en la llamada o no
+  getDisplayVoiceParticipants(): any[] {
+    // 1. Si estamos conectados a LiveKit, mostramos la lista en tiempo real (con aros verdes)
+    if (this.currentVoiceRoom) {
+      return this.voiceParticipants;
+    }
+    
+    // 2. Si estamos desconectados (viendo desde afuera), usamos la lista global de Spring Boot
+    if (this.activeChannelId && this.globalVoiceState[this.activeChannelId]) {
+      return this.globalVoiceState[this.activeChannelId].map(p => ({
+        identity: p.username,
+        isSpeaking: false, // Como estamos afuera, no sabemos quién habla exactamente
+        isLocal: false
+      }));
+    }
+
+    return [];
+  }
 
   private loadChannelHistory(channelId: number): void {
     this.messageService.getChannelHistory(channelId as any).subscribe({
@@ -291,10 +379,6 @@ export class Server implements OnInit, OnDestroy {
     });
   }
 
-  // ==========================================
-  // 🚀 LÓGICA DEL MODAL CLON (Crear Canal)
-  // ==========================================
-  
   isCreateChannelModalOpen: boolean = false;
 
   openCreateChannelModal(): void {
@@ -333,9 +417,7 @@ export class Server implements OnInit, OnDestroy {
   }
 
   getServerName(): string{
-    if(!this.serverData?.name || !this.activeChannelId) return 'MyServer';
-    const server = this.serverData.name
-    return server
+    return this.serverData?.name || 'Cargando...';
   }
 
   isOwner(): boolean {
@@ -343,20 +425,13 @@ export class Server implements OnInit, OnDestroy {
     return Number(this.serverData.ownerId) === Number(this.myUserId);
   }
 
-  // ==========================================
-  // 💥 LÓGICA DEL MODAL ELIMINAR SERVIDOR
-  // ==========================================
   isDeleteServerModalOpen: boolean = false;
 
   openDeleteServerModal(): void {
-    this.isServerMenuOpen = false; // Cerramos el menú desplegable superior
-    this.isDeleteServerModalOpen = true; // Abrimos el modal oscuro
+    this.isServerMenuOpen = false; 
+    this.isDeleteServerModalOpen = true; 
   }
 
-  /**
-   * Esta función se ejecuta ÚNICAMENTE cuando el modal hijo nos confirma 
-   * que el usuario escribió el nombre exacto y apretó el botón rojo.
-   */
   executeServerDeletion(): void {
     if (!this.currentServerId) return;
 
@@ -388,6 +463,7 @@ export class Server implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.topicSubscription?.unsubscribe();
     this.routeSub?.unsubscribe();
+    this.voicePresenceSub?.unsubscribe(); 
     this.leaveVoiceChannel();
   }
 }

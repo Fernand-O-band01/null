@@ -69,23 +69,23 @@
           </div>
         </div>
 
-        @if (channel.type === 'VOICE' && activeChannelId === channel.id && voiceParticipants.length > 0) {
+        @if (channel.type === 'VOICE' && globalVoiceState[channel.id!] && globalVoiceState[channel.id!].length > 0) {
           <div class="ml-6 mb-1.5 mt-0.5 flex flex-col gap-0.5">
             
-            @for (p of voiceParticipants; track p.identity) {
+            @for (p of globalVoiceState[channel.id!]; track p.userId) {
               <div class="flex items-center gap-2.5 px-2 py-1 hover:bg-[#35373c] rounded-md cursor-pointer group transition-colors">
                 
                 <div class="relative w-6 h-6 flex-shrink-0">
                   <div class="w-full h-full rounded-full bg-[#5865f2] flex items-center justify-center text-white text-[11px] font-bold">
-                    {{ p.identity?.charAt(0) | uppercase }}
+                    {{ p.username.charAt(0) | uppercase }}
+                    
                   </div>
-                  @if (p.isSpeaking) {
+                  @if (isUserSpeaking(p.userId, p.username)) {
                     <div class="absolute inset-0 rounded-full border-2 border-[#23a559] scale-110"></div>
                   }
                 </div>
-
                 <span class="text-[#949ba4] group-hover:text-[#dbdee1] text-[13px] font-medium truncate">
-                  {{ p.isLocal ? 'Tú' : p.identity }}
+                  {{ isItMe(p.userId) ? 'Tú' : p.username }}
                 </span>
 
               </div>
@@ -106,10 +106,8 @@
           (onDisconnect)="leaveVoiceChannel()"
           class="w-full"
           >
-      </app-voice-control-panel>
+        </app-voice-control-panel>
       </div>
-
-    
     }
 
   </div>
@@ -123,13 +121,12 @@
           <span>{{ getActiveChannelName() }}</span>
         </div>
 
-      <div class="flex items-center gap-4 text-[#b5bac1]">
-        <svg (click)="toggleMembersList()" class="w-6 h-6 cursor-pointer hover:text-[#dbdee1] transition-colors" [ngClass]="{'text-white': isMembersListOpen}" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z"/><path d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z" opacity="0.4"/><path d="M20.0001 20.006H22.0001V19.006C22.0001 16.4433 20.2697 14.4415 17.5213 13.5352C19.0621 14.9127 20.0001 16.8059 20.0001 19.006V20.006Z"/><path d="M14.8834 11.9077C16.6657 11.5044 18.0001 9.9077 18.0001 8.00598C18.0001 5.96916 16.4693 4.28218 14.4272 4.0367C15.3853 5.09459 16.0001 6.48398 16.0001 8.00598C16.0001 9.44888 15.4542 10.7744 14.8834 11.9077Z"/>
-        </svg>
+        <div class="flex items-center gap-4 text-[#b5bac1]">
+          <svg (click)="toggleMembersList()" class="w-6 h-6 cursor-pointer hover:text-[#dbdee1] transition-colors" [ngClass]="{'text-white': isMembersListOpen}" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z"/><path d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z" opacity="0.4"/><path d="M20.0001 20.006H22.0001V19.006C22.0001 16.4433 20.2697 14.4415 17.5213 13.5352C19.0621 14.9127 20.0001 16.8059 20.0001 19.006V20.006Z"/><path d="M14.8834 11.9077C16.6657 11.5044 18.0001 9.9077 18.0001 8.00598C18.0001 5.96916 16.4693 4.28218 14.4272 4.0367C15.3853 5.09459 16.0001 6.48398 16.0001 8.00598C16.0001 9.44888 15.4542 10.7744 14.8834 11.9077Z"/>
+          </svg>
+        </div>
       </div>
-    </div>
-
     }
 
     <div class="flex-1 flex overflow-hidden">
@@ -138,7 +135,7 @@
         
         <app-voice-room 
           class="flex-1 overflow-hidden"
-          [participants]="voiceParticipants" 
+          [participants]="getDisplayVoiceParticipants()" 
           [channelName]="getActiveChannelName()"
           [serverName]="getServerName()"
           >

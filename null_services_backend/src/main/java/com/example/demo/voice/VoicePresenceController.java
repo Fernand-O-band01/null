@@ -30,4 +30,10 @@ public class VoicePresenceController {
 
         presenceService.leaveRoom(serverId, request.getChannelId(), request.getUserId());
     }
+
+    // 🚀 NUEVO: Endpoint para que Angular pida la foto actual de las salas
+    @MessageMapping("/server/{serverId}/voice/sync")
+    public void syncVoice(@DestinationVariable Long serverId) {
+        presenceService.broadcastState(serverId);
+    }
 }

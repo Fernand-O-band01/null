@@ -35,7 +35,7 @@ public class VoicePresenceService {
 
         if (serverRooms != null && serverRooms.containsKey(channelId)) {
             // Eliminamos al usuario de la lista
-            serverRooms.get(channelId).removeIf(p -> p.getUserId().equals(userId));
+            serverRooms.get(channelId).removeIf(p -> p.getUserId().longValue() == userId.longValue());
 
             // Si el canal quedó vacío, limpiamos la memoria
             if (serverRooms.get(channelId).isEmpty()) {
@@ -48,7 +48,7 @@ public class VoicePresenceService {
     }
 
     // 📢 El Megáfono: Envía el estado completo del servidor por STOMP
-    private void broadcastState(Long serverId) {
+    public void broadcastState(Long serverId) {
         Map<Long, Set<VoiceParticipant>> serverState = activeVoiceRooms.getOrDefault(serverId, new HashMap<>());
         String topic = "/topic/server/" + serverId + "/voice-presence";
 
