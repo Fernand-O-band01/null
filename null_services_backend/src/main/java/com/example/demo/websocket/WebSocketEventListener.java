@@ -6,9 +6,11 @@ import com.example.demo.user.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional; // 🚀 Importante
+import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.security.Principal;
@@ -60,6 +62,32 @@ public class WebSocketEventListener {
                 System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
                 e.printStackTrace(); // Esto nos dirá exactamente por qué falla
             }
+        }
+    }
+
+// ... dentro de la clase ...
+
+    @EventListener
+    @Transactional
+    public void handleWebSocketConnectListener(SessionConnectEvent event) {
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+        Principal principal = accessor.getUser();
+
+        if (principal instanceof Authentication auth) {
+            User userPrincipal = (User) auth.getPrincipal();
+            Integer userId = userPrincipal.getId();
+
+            userRepository.findById(userId).ifPresent(user -> {
+                // 1. Cambiamos estado a ONLINE en la base de datos
+                user.setStatus(UserStatus.ONLINE);
+                userRepository.save(user);
+
+                // 2. Avisamos a todo el mundo (suscriptores del tópico)
+                String destination = "/topic/user/status/" + user.getId();
+                messagingTemplate.convertAndSend(destination, "ONLINE");
+
+                System.out.println("🟢 Usuario conectado y anunciado: " + user.getNickName());
+            });
         }
     }
 }

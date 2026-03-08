@@ -17,7 +17,8 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   public nickname$ = new BehaviorSubject<string>(this.getInitialUser()?.nickname || 'Usuario').asObservable();
 
-  constructor(private tokenService: Token) {} // 🚀 Inyectamos el Token Service aquí
+  constructor(private tokenService: Token
+  ) {} // 🚀 Inyectamos el Token Service aquí
 
   // 🚀 NUEVO: Getter público para obtener el usuario actual sin suscribirse
   public get currentUserValue(): AuthenticationResponse | null {

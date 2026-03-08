@@ -87,6 +87,7 @@ export class FriendsOnline implements OnInit, OnDestroy {
       } else if (newStatus !== 'OFFLINE') {
         // Si un amigo se conecta y no estaba en la lista, recargamos
         this.loadFriends();
+        this.cdr.detectChanges();
       }
     }
   }
