@@ -37,7 +37,7 @@ export class FriendAdd {
         this.targetUserId = '';
       },
       error: (error) => {
-        this.showStatus('Failed to send friend request: ', true);
+        this.showStatus('Failed to send friend request ', true);
         console.log(error);
       }
         
