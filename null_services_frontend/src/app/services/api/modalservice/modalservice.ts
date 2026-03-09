@@ -6,19 +6,39 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class Modalservice {
   
-  // Variable reactiva que guarda si el panel de ajustes está abierto o cerrado
+  // ==========================================
+  // ⚙️ MODAL DE AJUSTES (SETTINGS)
+  // ==========================================
   private showSettingsSource = new BehaviorSubject<boolean>(false);
-  
-  // El observable que los componentes van a escuchar
   public showSettings$ = this.showSettingsSource.asObservable();
 
-  // Función para abrir
   openSettings(): void {
     this.showSettingsSource.next(true);
   }
 
-  // Función para cerrar
   closeSettings(): void {
     this.showSettingsSource.next(false);
+  }
+
+  // ==========================================
+  // 💬 🚀 NUEVO: MODAL DE CREAR MENSAJE DIRECTO
+  // ==========================================
+  private showCreateDmSource = new BehaviorSubject<boolean>(false);
+  public showCreateDm$ = this.showCreateDmSource.asObservable();
+
+  openCreateDm(): void {
+    this.showCreateDmSource.next(true);
+  }
+
+  closeCreateDm(): void {
+    this.showCreateDmSource.next(false);
+  }
+
+  // ==========================================
+  // 🧹 UTILIDAD: CERRAR TODOS LOS MODALES
+  // ==========================================
+  closeAllModals(): void {
+    this.showSettingsSource.next(false);
+    this.showCreateDmSource.next(false);
   }
 }

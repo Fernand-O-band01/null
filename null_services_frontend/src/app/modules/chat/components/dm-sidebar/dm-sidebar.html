@@ -32,7 +32,9 @@
 
     <div class="pt-2 px-4 pb-1 flex items-center justify-between group cursor-pointer text-[#949ba4] transition-colors">
       <span class="text-xs font-bold hover:text-[#dbdee1]">MENSAJES DIRECTOS</span>
-      <button class="hover:text-[#dbdee1]" title="Crear DM">
+      <button class="hover:text-[#dbdee1]" title="Crear DM"
+      (click)="openCreateDMModal()"
+      >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
           <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
@@ -68,3 +70,7 @@
 
     </div>
 </div>
+
+@if (modalService.showCreateDm$ | async) {
+  <app-create-dm-modal></app-create-dm-modal>
+}

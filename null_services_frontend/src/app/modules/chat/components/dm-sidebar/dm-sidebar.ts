@@ -2,11 +2,13 @@ import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@ang
 import { CommonModule } from '@angular/common';
 import { ConversationControllerService } from '../../../../services/api';
 import { ConversationResponse } from '../../../../services/api';
+import { Modalservice } from '../../../../services/api/modalservice/modalservice';
+import { CreateDmModalComponent } from './components/create-dm-modal/create-dm-modal/create-dm-modal';
 
 
 @Component({
   selector: 'app-dm-sidebar',
-  imports: [CommonModule],
+  imports: [CommonModule, CreateDmModalComponent],
   templateUrl: './dm-sidebar.html',
   styleUrl: './dm-sidebar.css',
 })
@@ -18,8 +20,13 @@ export class DmSidebar implements OnInit {
 
   constructor(
     private conversationService: ConversationControllerService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public modalService: Modalservice
   ){}
+
+  openCreateDMModal(): void{
+    this.modalService.openCreateDm();
+  }
 
   ngOnInit(): void {
       this.loadConversation();
