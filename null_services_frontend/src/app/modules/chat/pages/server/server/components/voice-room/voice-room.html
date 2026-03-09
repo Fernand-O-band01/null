@@ -13,7 +13,31 @@
       
       @for (p of participants; track p.identity) {
         
-        <div class="relative flex flex-col items-center justify-center bg-[#1e1f22] rounded-xl overflow-hidden transition-all duration-200"
+        @if(participants.length === 1){
+          <div class="relative flex flex-col items-center justify-center bg-[#1e1f22] rounded-xl overflow-hidden transition-all duration-200"
+             [ngClass]="{
+               'ring-4 ring-[#23a559] shadow-[0_0_15px_rgba(35,165,89,0.3)]': p.isSpeaking,
+               'border-2 border-transparent': !p.isSpeaking
+             }"
+             style="min-width: 280px; min-height: 200px; width: 100%; max-width: 800px; aspect-ratio: 16/9;">
+             
+             <div class="w-24 h-24 rounded-full bg-[#5865f2] flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+               {{ p.identity?.charAt(0) | uppercase }}
+             </div>
+
+             <div class="absolute bottom-3 left-3 bg-black/70 px-2.5 py-1.5 rounded-md flex items-center gap-2 backdrop-blur-sm">
+               
+               @if (p.isSpeaking) {
+                 <div class="w-2.5 h-2.5 rounded-full bg-[#23a559] shadow-[0_0_8px_#23a559] animate-pulse"></div>
+               }
+
+               <span class="text-white text-sm font-semibold tracking-wide">
+                 {{ p.isLocal ? 'Tú (' + p.identity + ')' : p.identity }}
+               </span>
+             </div>
+        </div>
+        }@else{
+          <div class="relative flex flex-col items-center justify-center bg-[#1e1f22] rounded-xl overflow-hidden transition-all duration-200"
              [ngClass]="{
                'ring-4 ring-[#23a559] shadow-[0_0_15px_rgba(35,165,89,0.3)]': p.isSpeaking,
                'border-2 border-transparent': !p.isSpeaking
@@ -35,6 +59,7 @@
                </span>
              </div>
         </div>
+        }
 
       }
 

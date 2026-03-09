@@ -70,7 +70,7 @@
         </div>
 
         @if (channel.type === 'VOICE' && globalVoiceState[channel.id!] && globalVoiceState[channel.id!].length > 0) {
-          <div class="ml-6 mb-1.5 mt-0.5 flex flex-col gap-0.5">
+          <div class=" mb-1.5 mt-0.5 flex flex-col gap-0.5">
             
             @for (p of globalVoiceState[channel.id!]; track p.userId) {
               <div class="flex items-center gap-2.5 px-2 py-1 hover:bg-[#35373c] rounded-md cursor-pointer group transition-colors">
@@ -81,7 +81,7 @@
                     
                   </div>
                   @if (isUserSpeaking(p.userId, p.username)) {
-                    <div class="absolute inset-0 rounded-full border-2 border-[#23a559] scale-110"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-[#23a559] scale-110"></div>
                   }
                 </div>
                 <span class="text-[#949ba4] group-hover:text-[#dbdee1] text-[13px] font-medium truncate">
