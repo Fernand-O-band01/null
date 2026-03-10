@@ -91,6 +91,34 @@ export class DmSidebar implements OnInit, OnDestroy {
   }
 
   /**
+   * Se ejecuta al hacer clic EXACTAMENTE en la "X" que aparece al hacer hover
+   */
+  removeConversation(event: Event, conv: ConversationResponse) {
+    // 1. ESCUDO: Evita que el clic "traspase" la X y active el selectConversation() del fondo
+    event.stopPropagation(); 
+
+    console.log('Solicitud para quitar chat de la barra:', conv);
+
+    // 2. UX MÁGICA: Lo borramos de la vista instantáneamente
+    // Filtramos la lista para quedarnos con todos MENOS el que acabamos de clickear
+    this.conversations = this.conversations.filter(c => c.id !== conv.id);
+
+    // 3. LÓGICA DE NEGOCIO (El puente hacia tu Backend)
+    // Discord maneja diferente borrar un 1v1 que abandonar un Grupo.
+    const isGroup = conv.otherUserName?.includes(',');
+
+    if (isGroup) {
+      console.log('Es un grupo: Se debería llamar a la API para ABANDONAR o ELIMINAR el grupo.');
+      // AQUÍ IRÁ TU LLAMADA AL BACKEND:
+      // this.conversationService.leaveGroup(conv.id).subscribe(...)
+    } else {
+      console.log('Es 1v1: Se debería llamar a la API para OCULTAR este chat de tu vista.');
+      // AQUÍ IRÁ TU LLAMADA AL BACKEND:
+      // this.conversationService.hideConversation(conv.id).subscribe(...)
+    }
+  }
+
+  /**
    * Al hacer clic en un chat de la lista, avisamos al padre (Home).
    */
   selectConversation(conv: ConversationResponse){
