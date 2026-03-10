@@ -71,29 +71,49 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   }
 
   createDirectMessage(): void {
-  if (this.selectedFriendIds.size === 0) return;
+    if (this.selectedFriendIds.size === 0) return;
 
-  const friendId = Array.from(this.selectedFriendIds)[0];
-  const friendData = this.friendsList.find(f => f.id === friendId);
-  
-  console.log('Creando DM con el ID:', friendId);
+    // Convertimos el Set a un Array de IDs
+    const recipientIds = Array.from(this.selectedFriendIds);
 
-  this.conversationControllerService.createConversation(friendId as any).subscribe({
-    next: (response: any) => {
+    // ==========================================
+    // 👤 CASO 1: CHAT 1 VS 1
+    // ==========================================
+    if (recipientIds.length === 1) {
+      const friendId = recipientIds[0];
+      const friendData = this.friendsList.find(f => f.id === friendId);
       
-      // 1. Cerramos el modal
-      this.closeModal();
-      
-      // 2. 🚀 ¡USAMOS EL WALKIE-TALKIE!
-      // Le avisamos a toda la app que queremos abrir este chat específico
-      const name = friendData?.name || 'Usuario';
-      this.chatNavigationService.openChat(response.id, name);
-      
-      console.log("¡Chat creado/obtenido con éxito y señal emitida!", response);
-    },
-    error: (err) => console.error('Error al crear/abrir DM chat', err)
-  });
-}
+      console.log('Creando DM 1v1 con el ID:', friendId);
+
+      this.conversationControllerService.createConversation(friendId as any).subscribe({
+        next: (response: any) => {
+          this.closeModal();
+          const name = friendData?.name || response.otherUserName || 'Usuario';
+          this.chatNavigationService.openChat(response.id, name);
+        },
+        error: (err) => console.error('Error al crear DM 1v1', err)
+      });
+    } 
+    // ==========================================
+    // 👥 CASO 2: CHAT GRUPAL
+    // ==========================================
+    else {
+      console.log('Creando DM Grupal con los IDs:', recipientIds);
+
+      // 🚀 Usamos tu NUEVO método generado por OpenAPI
+      this.conversationControllerService.createGroupConversation(recipientIds).subscribe({
+        next: (response: any) => {
+          this.closeModal();
+          
+          // El backend ya nos devuelve el nombre unido (ej: "Juan, María") en response.otherUserName
+          const groupName = response.otherUserName || 'Grupo Nuevo';
+          
+          this.chatNavigationService.openChat(response.id, groupName);
+        },
+        error: (err) => console.error('Error al crear DM Grupal', err)
+      });
+    }
+  }
 
   closeModal(): void {
     this.modalService.closeCreateDm(); 
