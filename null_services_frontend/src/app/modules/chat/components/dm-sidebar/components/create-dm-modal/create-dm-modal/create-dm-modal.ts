@@ -9,6 +9,8 @@ import { FriendResponseDTO, ConversationControllerService } from '../../../../..
 import { FriendsDataService } from '../../../../../../../services/api/friends-data-service/friends-data-service';
 import { Modalservice } from '../../../../../../../services/api/modalservice/modalservice';
 
+import { ChatNavigationService } from '../../../../../../../services/api/chat-navigation-service/chat-navigation-service';
+
 @Component({
   selector: 'app-create-dm-modal',
   standalone: true,
@@ -28,7 +30,8 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
     private friendsDataService: FriendsDataService,
     private modalService: Modalservice,
     private conversationControllerService: ConversationControllerService, // 🚀 AHORA SÍ ES TU SERVICIO REAL
-    private router: Router
+    private router: Router,
+    private chatNavigationService: ChatNavigationService
   ) {}
 
   ngOnInit(): void {
@@ -66,32 +69,29 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   }
 
   createDirectMessage(): void {
-    if (this.selectedFriendIds.size === 0) return;
+  if (this.selectedFriendIds.size === 0) return;
 
-    // Tomamos el ID del amigo seleccionado
-    const friendId = Array.from(this.selectedFriendIds)[0];
-    const friendData = this.friendsList.find(f => f.id === friendId);
-    
-    console.log('Creando DM con el ID:', friendId);
+  const friendId = Array.from(this.selectedFriendIds)[0];
+  const friendData = this.friendsList.find(f => f.id === friendId);
+  
+  console.log('Creando DM con el ID:', friendId);
 
-    // 🚀 USAMOS TU MÉTODO REAL (El mismo que usas en friends-all)
-    this.conversationControllerService.createConversation(friendId as any).subscribe({
-      next: (response: any) => {
-        
-        // 1. Cerramos el modal
-        this.closeModal();
-        
-        // 2. ⚠️ ¿CÓMO ABRIMOS EL CHAT AQUÍ?
-        // En friends-all.ts usabas un @Output() para avisarle a home.ts que abriera el chat.
-        // Como el modal no tiene conexión directa con home.ts, dime:
-        // ¿Tu app cambia la URL al abrir un chat (ej. /home/dm/15)? 
-        // ¿O usas variables para ocultar/mostrar paneles en la misma pantalla?
-        console.log("¡Chat creado/obtenido con éxito!", response);
-
-      },
-      error: (err) => console.error('Error al crear/abrir DM chat', err)
-    });
-  }
+  this.conversationControllerService.createConversation(friendId as any).subscribe({
+    next: (response: any) => {
+      
+      // 1. Cerramos el modal
+      this.closeModal();
+      
+      // 2. 🚀 ¡USAMOS EL WALKIE-TALKIE!
+      // Le avisamos a toda la app que queremos abrir este chat específico
+      const name = friendData?.name || 'Usuario';
+      this.chatNavigationService.openChat(response.id, name);
+      
+      console.log("¡Chat creado/obtenido con éxito y señal emitida!", response);
+    },
+    error: (err) => console.error('Error al crear/abrir DM chat', err)
+  });
+}
 
   closeModal(): void {
     this.modalService.closeCreateDm(); 

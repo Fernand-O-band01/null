@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; // 🚀 Importamos ChangeDetectorRef
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
+
 import { DmSidebar } from "../../../components/dm-sidebar/dm-sidebar";
 import { FriendsOnline } from '../components/friends-online/friends-online';
 import { FriendsAll } from '../components/friends-all/friends-all/friends-all';
@@ -7,11 +9,15 @@ import { FriendsPending } from '../components/friends-pending/friends-pending/fr
 import { FriendAdd } from '../components/friends-add/friend-add/friend-add';
 import { ChatRoom } from '../components/chat-room/chat-room/chat-room';
 
+// 🚀 IMPORTAMOS EL WALKIE-TALKIE
+import { ChatNavigationService } from '../../../../../services/api/chat-navigation-service/chat-navigation-service';
+
 type tabType = 'ONLINE' | 'ALL' | 'PENDING' | 'ADD';
 type ViewType = 'FRIENDS' | 'CHAT';
 
 @Component({
   selector: 'app-home',
+  standalone: true, // 🚀 Añadí standalone por si acaso
   imports: [
     CommonModule, 
     DmSidebar, 
@@ -24,31 +30,50 @@ type ViewType = 'FRIENDS' | 'CHAT';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home {
+export class Home implements OnInit, OnDestroy {
 
   currentView: ViewType = 'FRIENDS';
   activeTab: tabType = 'ALL';
 
-  // Variables que alimentan el chat
   activeConversationId: number | null = null;
   activeFriendName: string = '';
 
-  // 👇 El "Cerebro" que maneja los clics de cualquier parte 👇
+  private chatNavSub?: Subscription;
+
+  constructor(
+    private chatNavigationService: ChatNavigationService,
+    private cdr: ChangeDetectorRef // 🚀 INYECTAMOS EL DETECTOR DE CAMBIOS
+  ) {}
+
+  ngOnInit() {
+    // 📻 Nos ponemos a escuchar el Walkie-Talkie
+    this.chatNavSub = this.chatNavigationService.openChat$.subscribe(data => {
+      console.log('📻 home.ts escuchó el modal! Abriendo chat:', data);
+      
+      this.openChat(data);
+
+      // 🚀 EL EMPUJÓN MÁGICO: Obligamos a Angular a mostrar el ChatRoom
+      this.cdr.detectChanges(); 
+    });
+  }
+
+  ngOnDestroy() {
+    this.chatNavSub?.unsubscribe();
+  }
+
   openChat(eventData: any) {
     console.log('Solicitud para abrir chat:', eventData);
 
-    // CASO 1: Si el clic viene de la Barra Lateral (tiene 'otherUserName')
     if (eventData.otherUserName) {
       this.activeConversationId = eventData.id;
       this.activeFriendName = eventData.otherUserName;
     } 
-    // CASO 2: Si el clic viene de tu Lista de Amigos (tiene 'friendName')
     else {
       this.activeConversationId = eventData.conversationId;
       this.activeFriendName = eventData.friendName;
     }
 
-    // Finalmente, cambiamos la pantalla al modo CHAT
+    // Cambiamos la vista
     this.currentView = 'CHAT';
   }
 
