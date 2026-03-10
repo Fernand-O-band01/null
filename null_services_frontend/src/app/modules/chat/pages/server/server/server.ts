@@ -17,6 +17,8 @@ import { VoiceControllerService } from '../../../../../services/api/api/voiceCon
 import { VoiceControlPanel } from './components/voice-control-panel/voice-control-panel';
 import { VoiceRoom } from './components/voice-room/voice-room';
 
+import { MemberSidebar } from '../../../components/member-sidebar/member-sidebar/member-sidebar';
+
 // Interfaces STOMP
 export interface VoiceJoinRequest {
   channelId: number;
@@ -40,7 +42,8 @@ export interface VoiceParticipant {
     CreateChannelModal, 
     DeleteServerModal,
     VoiceControlPanel,
-    VoiceRoom
+    VoiceRoom,
+    MemberSidebar
   ],
   templateUrl: './server.html',
   styleUrl: './server.css',

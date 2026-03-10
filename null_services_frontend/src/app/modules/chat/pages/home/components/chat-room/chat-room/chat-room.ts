@@ -12,12 +12,12 @@ import { MessageControllerService } from '../../../../../../../services/api';
 import { Message } from '../../../../../../../services/api';;
 import { Websocket } from '../../../../../../../services/api/websocket/websocket';
 
-
+import { MemberSidebar } from '../../../../../components/member-sidebar/member-sidebar/member-sidebar';
 
 @Component({
   selector: 'app-chat-room',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MemberSidebar],
   templateUrl: './chat-room.html',
   styleUrl: './chat-room.css',
 })
@@ -182,6 +182,18 @@ export class ChatRoom implements OnChanges, OnDestroy {
     } catch(err) { 
       // Silenciamos el error por si Angular intenta hacer scroll antes de que el contenedor exista
     }
+  }
+
+  isGroup(): boolean {
+    return this.friendName ? this.friendName.includes(','): false
+  }
+  getGroupMembers() {
+    if (!this.isGroup()) return [];
+    return this.friendName.split(',').map((name, index) => ({
+      id: index,
+      username: name.trim(),
+      imageUrl: null // Opcional: podrías buscar fotos si las tienes
+    }));
   }
 
 

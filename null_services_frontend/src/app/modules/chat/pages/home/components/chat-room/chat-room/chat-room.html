@@ -84,8 +84,14 @@
 
 
   <div class="hidden xl:flex w-[340px] bg-[#1E1F22] flex-col h-full border-l border-[#313338] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">
-    
-    <div class="h-[120px] w-full shrink-0" [ngStyle]="{'background-color': friendProfile.bannerColor}"></div>
+    @if (isGroup()) {
+      <app-member-sidebar
+      [members]="getGroupMembers()"
+      class="h-full"
+      >
+      </app-member-sidebar>
+    }@else {
+      <div class="h-[120px] w-full shrink-0" [ngStyle]="{'background-color': friendProfile.bannerColor}"></div>
 
     <div class="px-4 pb-4 relative">
       
@@ -119,6 +125,8 @@
       </div>
 
     </div>
+    }
+    
   </div>
 
 </div>
