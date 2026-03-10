@@ -57,10 +57,12 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   toggleSelection(friendId: number | undefined): void {
     if (friendId === undefined) return;
     
-    // 💡 Como tu método actual (createConversation) solo acepta 1 ID a la vez, 
-    // limpiamos el set para que solo se pueda seleccionar de a una persona por ahora.
-    this.selectedFriendIds.clear();
-    this.selectedFriendIds.add(friendId);
+    
+    if (this.selectedFriendIds.has(friendId)) {
+      this.selectedFriendIds.delete(friendId);
+    } else {
+      this.selectedFriendIds.add(friendId);
+    }
   }
 
   isFriendSelected(friendId: number | undefined): boolean {
