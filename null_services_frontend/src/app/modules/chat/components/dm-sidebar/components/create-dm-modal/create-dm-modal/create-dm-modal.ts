@@ -24,6 +24,7 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   friendsList: FriendResponseDTO[] = [];
   selectedFriendIds = new Set<number>();
   searchTerm: string = '';
+  showDuplicateWarning: boolean = false;
   private sub?: Subscription;
 
   constructor(
@@ -57,12 +58,14 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   toggleSelection(friendId: number | undefined): void {
     if (friendId === undefined) return;
     
-    
     if (this.selectedFriendIds.has(friendId)) {
       this.selectedFriendIds.delete(friendId);
     } else {
       this.selectedFriendIds.add(friendId);
     }
+
+    // 🚀 Si el usuario cambia la selección, ocultamos la advertencia
+    this.showDuplicateWarning = false; 
   }
 
   isFriendSelected(friendId: number | undefined): boolean {
@@ -75,32 +78,29 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
 
     const recipientIds = Array.from(this.selectedFriendIds);
 
-    // ==========================================
-    // 👤 CASO 1: CHAT 1 VS 1
-    // ==========================================
+    // 👤 CASO 1: CHAT 1 VS 1 (No necesita validación de duplicados aquí)
     if (recipientIds.length === 1) {
       this.executeCreation(recipientIds);
       return;
     }
 
-    // ==========================================
-    // 👥 CASO 2: CHAT GRUPAL (Validación)
-    // ==========================================
-    console.log('Validando si el grupo ya existe...');
-    
-    // Obtenemos las conversaciones actuales para comparar
+    // 🚀 CASO 2: SI LA ADVERTENCIA YA ESTÁ VISIBLE Y EL USUARIO CONFIRMA
+    if (this.showDuplicateWarning) {
+      this.executeCreation(recipientIds);
+      return;
+    }
+
+    // 👥 CASO 3: CHAT GRUPAL (Validación inicial)
     this.conversationControllerService.getConversation().subscribe({
       next: (conversations) => {
-        
         const isDuplicate = this.checkIfGroupExists(recipientIds, conversations);
         
         if (isDuplicate) {
-          const confirmNew = confirm("Ya tienes un grupo con estas mismas personas. ¿Quieres crear uno nuevo de todas formas?");
-          if (!confirmNew) return; // Si el usuario cancela, detenemos todo
+          // 🚀 MOSTRAMOS LA ADVERTENCIA EN EL HTML EN LUGAR DEL CONFIRM
+          this.showDuplicateWarning = true; 
+        } else {
+          this.executeCreation(recipientIds);
         }
-
-        // Si no es duplicado o el usuario aceptó crear otro, procedemos
-        this.executeCreation(recipientIds);
       },
       error: (err) => {
         console.error("Error validando grupos, intentando crear de todos modos...", err);
