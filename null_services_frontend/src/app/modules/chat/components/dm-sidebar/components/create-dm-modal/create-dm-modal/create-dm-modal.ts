@@ -8,8 +8,10 @@ import { Subscription } from 'rxjs';
 import { FriendResponseDTO, ConversationControllerService } from '../../../../../../../services/api';
 import { FriendsDataService } from '../../../../../../../services/api/friends-data-service/friends-data-service';
 import { Modalservice } from '../../../../../../../services/api/modalservice/modalservice';
+import { FriendsControllerService } from '../../../../../../../services/api';
 
 import { ChatNavigationService } from '../../../../../../../services/api/chat-navigation-service/chat-navigation-service';
+import { PresenceService } from '../../../../../../../services/api/presence/presence';
 
 @Component({
   selector: 'app-create-dm-modal',
@@ -26,6 +28,7 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   searchTerm: string = '';
   showDuplicateWarning: boolean = false;
   private sub?: Subscription;
+  private presenceSubs: Subscription = new Subscription();
 
   constructor(
     private friendsDataService: FriendsDataService,
@@ -33,18 +36,58 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
     private conversationControllerService: ConversationControllerService, // 🚀 AHORA SÍ ES TU SERVICIO REAL
     private router: Router,
     private chatNavigationService: ChatNavigationService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private presenceService: PresenceService,
+    private friendService: FriendsControllerService
   ) {}
 
   ngOnInit(): void {
-    // 1. Nos suscribimos a la fuente de datos compartida
-    this.sub = this.friendsDataService.allFriends$.subscribe(friends => {
-      this.friendsList = friends;
+    // 🚀 Pedimos la lista fresca directamente al backend al abrir el modal
+    this.sub = this.friendService.getMyFriends().subscribe({
+      next: (friends) => {
+        this.friendsList = friends;
+        
+        // Conectamos los WebSockets para escuchar cambios a partir de ahora
+        this.subscribeToPresence(); 
+        
+        // Obligamos a Angular a repintar la lista con los estados reales
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando la lista de amigos', err)
     });
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+    this.presenceSubs.unsubscribe();
+  }
+
+  private handleStatusUpdate(friendId: number, rawStatus: string): void {
+    const newStatus = rawStatus.replace(/['"]+/g, '').trim(); 
+    const index = this.friendsList.findIndex(f => f.id === friendId);
+    
+    if (index !== -1) {
+      // Actualizamos el objeto para que Angular detecte el cambio en el HTML
+      this.friendsList[index] = { ...this.friendsList[index], status: newStatus as any };
+      this.cdr.detectChanges();
+    }
+  }
+
+  private subscribeToPresence(): void {
+    // Limpiamos suscripciones anteriores por si la lista se recarga
+    this.presenceSubs.unsubscribe();
+    this.presenceSubs = new Subscription();
+
+    this.friendsList.forEach(friend => {
+      if (friend.id) {
+        const statusSub = this.presenceService.watchUserStatus(friend.id).subscribe({
+          next: (rawStatus) => {
+            this.handleStatusUpdate(friend.id!, rawStatus);
+          }
+        });
+        this.presenceSubs.add(statusSub);
+      }
+    });
   }
 
   get filteredFriends(): FriendResponseDTO[] {
