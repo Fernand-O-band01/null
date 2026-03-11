@@ -83,50 +83,54 @@
   </div>
 
 
-  <div class="hidden xl:flex w-[240px] bg-[#1E1F22] flex-col h-full border-l border-[#313338] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">
+  
     @if (isGroup()) {
-      <app-member-sidebar
-      [members]="getGroupMembers()"
-      class="h-full"
-      >
-      </app-member-sidebar>
+      <div class="hidden xl:flex w-[240px] bg-[#1E1F22] flex-col h-full border-l border-[#313338] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">
+        <app-member-sidebar
+        [members]="getGroupMembers()"
+        class="h-full"
+        >
+        </app-member-sidebar>
+      </div>
     }@else {
+    <div class="hidden xl:flex w-[340px] bg-[#1E1F22] flex-col h-full border-l border-[#313338] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">
       <div class="h-[120px] w-full shrink-0" [ngStyle]="{'background-color': friendProfile.bannerColor}"></div>
 
-    <div class="px-4 pb-4 relative">
+      <div class="px-4 pb-4 relative">
       
-      <div class="absolute -top-14 left-4 rounded-full border-[6px] border-[#2B2D31] bg-[#2B2D31] w-[92px] h-[92px] flex justify-center items-center">
-        <img src="/null_logo_inverse.webp" alt="Avatar" class=" rounded-full object-cover w-[58px] h-[58px] ">
-        <div class="absolute bottom-0 right-1 w-5 h-5 bg-[#23a559] rounded-full border-[4px] border-[#2B2D31]"></div>
-      </div>
-
-      <div class="h-16 w-full"></div>
-
-      <div class="bg-[#111214] rounded-xl p-3 text-white shadow-sm mt-2">
-        <h2 class="text-[20px] font-bold leading-tight text-[#f2f3f5]">{{ friendName }}</h2>
-        <p class="text-sm text-[#dbdee1] mb-4">{{ friendProfile.pronouns }}</p>
-
-        <div class="w-full h-[1px] bg-[#2B2D31] my-3"></div>
-
-        <h3 class="text-[12px] font-bold text-[#b5bac1] uppercase mb-1">Acerca de mí</h3>
-        <p class="text-[14px] text-[#dbdee1] leading-snug">{{ friendProfile.bio }}</p>
-
-        <h3 class="text-[12px] font-bold text-[#b5bac1] uppercase mt-4 mb-1">Miembro de Angular desde</h3>
-        <p class="text-[14px] text-[#dbdee1]">{{ friendProfile.memberSince }}</p>
-      </div>
-
-      <div class="mt-4 px-2">
-        <h3 class="text-[12px] font-bold text-[#b5bac1] uppercase mb-2">Servidores en común - {{ friendProfile.mutualServers }}</h3>
-        <div class="flex items-center space-x-3 mt-3">
-           <div class="w-10 h-10 rounded-[12px] bg-indigo-500 text-white flex items-center justify-center font-bold cursor-pointer hover:rounded-[8px] transition-all duration-200">
-             SV
-           </div>
+        <div class="absolute -top-14 left-4 rounded-full border-[6px] border-[#2B2D31] bg-[#2B2D31] w-[92px] h-[92px] flex justify-center items-center">
+          <img src="/null_logo_inverse.webp" alt="Avatar" class=" rounded-full object-cover w-[58px] h-[58px] ">
+          <div class="absolute bottom-0 right-1 w-5 h-5 bg-[#23a559] rounded-full border-[4px] border-[#2B2D31]"></div>
         </div>
-      </div>
 
+        <div class="h-16 w-full"></div>
+
+        <div class="bg-[#111214] rounded-xl p-3 text-white shadow-sm mt-2">
+          <h2 class="text-[20px] font-bold leading-tight text-[#f2f3f5]">{{ friendName }}</h2>
+          <p class="text-sm text-[#dbdee1] mb-4">{{ friendProfile.pronouns }}</p>
+
+          <div class="w-full h-[1px] bg-[#2B2D31] my-3"></div>
+
+          <h3 class="text-[12px] font-bold text-[#b5bac1] uppercase mb-1">Acerca de mí</h3>
+          <p class="text-[14px] text-[#dbdee1] leading-snug">{{ friendProfile.bio }}</p>
+
+          <h3 class="text-[12px] font-bold text-[#b5bac1] uppercase mt-4 mb-1">Miembro de Angular desde</h3>
+          <p class="text-[14px] text-[#dbdee1]">{{ friendProfile.memberSince }}</p>
+        </div>
+
+        <div class="mt-4 px-2">
+          <h3 class="text-[12px] font-bold text-[#b5bac1] uppercase mb-2">Servidores en común - {{ friendProfile.mutualServers }}</h3>
+          <div class="flex items-center space-x-3 mt-3">
+            <div class="w-10 h-10 rounded-[12px] bg-indigo-500 text-white flex items-center justify-center font-bold cursor-pointer hover:rounded-[8px] transition-all duration-200">
+             SV
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
     }
     
-  </div>
+  
 
 </div>
