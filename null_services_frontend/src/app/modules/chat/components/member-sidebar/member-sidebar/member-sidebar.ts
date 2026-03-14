@@ -75,7 +75,7 @@ export class MemberSidebar implements OnChanges, OnDestroy {
   getStatusColor(status: string | undefined): string {
     switch (status) {
       case 'ONLINE': return 'bg-[#23a559]';
-      case 'IDLE': return 'bg-[#f0b232]';
+      case 'AWAY': return 'bg-[#f0b232]';
       case 'DO_NOT_DISTURB': return 'bg-[#f23f43]';
       case 'OFFLINE': 
       default: return 'bg-[#80848e]';
