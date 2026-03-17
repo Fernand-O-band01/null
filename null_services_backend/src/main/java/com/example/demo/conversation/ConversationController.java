@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import java.util.List;
 
 /**
- * Controlador dedicado al manejo de endpoints
+ * Controlador dedicado al manejo de endpoints de
  * conversaciones (CREAR, GRUPO DE CONVERSACIÓN,
  * OBTENER CONVERSACIONES , OCULTAR CONVERSACIONES).
  */
@@ -33,8 +33,6 @@ public class ConversationController {
     /**
      * ENDPOINT: POST /conversations/{targetUserId}
      * Propósito: Crea o recupera un chat de 1 vs 1.
-     * * @param targetUserId El ID del amigo con el que
-     * quieres hablar (viene en la URL).
      * @param connectedUser El usuario que está haciendo
      * la petición (obtenido del token JWT).
      * @param targetUserId Usuario seleccionado para crear
