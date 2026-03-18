@@ -83,7 +83,7 @@ public class GlobalExceptionHandler {
                 .body(
                         ExceptionResponse
                                 .builder()
-                                .ValidationError(errors)
+                                .validationError(errors)
                                 .build()
                 );
     }
