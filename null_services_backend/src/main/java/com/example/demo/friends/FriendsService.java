@@ -15,24 +15,47 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FriendsService {
 
+    /**
+     * Repositorio para acceder a las amistades
+     * de los usuarios.
+     */
     private final FriendsRepository friendsRepository;
+    /**
+     * Repositorio para acceder a la información de
+     * los usuarios.
+     */
     private final UserRepository userRepository;
 
-    public void sendFriendRequest(Integer targetUserId, Authentication connectedUser){
+
+    /**
+     * LÓGICA: ENVIAR UNA SOLICITUD DE AMISTAD.
+     * Enviar una solicitud de amistada a un usuario.
+     * @param connectedUser Usuario activo validado desde el token
+     * de seguridad.
+     * @param targetUserId Usuario seleccionado para enviar
+     * la solicitud de amistad.
+     */
+    public void sendFriendRequest(
+            final Integer targetUserId,
+            final Authentication connectedUser
+    ) {
 
         User currentUser = (User) connectedUser.getPrincipal();
 
-        if(currentUser.getId().equals(targetUserId)){
-            throw new RuntimeException("You can't send friend request to yourself");
+        if (currentUser.getId().equals(targetUserId)) {
+            throw new RuntimeException(
+                    "You can't send friend request to yourself");
         }
 
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Optional<Friends> existingRelationship = friendsRepository.findFriendshipBetweenUsers(currentUser, targetUser);
+        Optional<Friends> existingRelationship = friendsRepository
+                .findFriendshipBetweenUsers(currentUser, targetUser);
 
-        if(existingRelationship.isPresent()){
-            throw new RuntimeException("Friendship already exists or request has already been sent");
+        if (existingRelationship.isPresent()) {
+            throw new RuntimeException(
+                    "Friendship already exists or has already been sent");
         }
 
         Friends request = Friends.builder()
@@ -45,31 +68,57 @@ public class FriendsService {
         friendsRepository.save(request);
     }
 
-    public void acceptFriendRequest(Long friendShipId, Authentication connectedUser){
+    /**
+     * LÓGICA: ACEPTAR UNA SOLICITUD DE AMISTAD.
+     * Aceptar una solicitud de amistada proveniente de un
+     * usuario desconocido.
+     * @param connectedUser Usuario activo validado desde el token
+     * de seguridad.
+     * @param friendShipId Identificador unico de la petición de
+     * amistada enviada por el usuario.
+     */
+    public void acceptFriendRequest(
+            final Long friendShipId,
+            final Authentication connectedUser
+    ) {
         User currentUser = (User) connectedUser.getPrincipal();
 
         Friends request = friendsRepository.findById(friendShipId)
-                .orElseThrow(() -> new RuntimeException("Friendship request not found"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Friendship request not found"));
 
-        if(!request.getAddressee().getId().equals(currentUser.getId())){
-            throw new RuntimeException("You can't accept friendship request");
+        if (!request.getAddressee().getId().equals(currentUser.getId())) {
+            throw new RuntimeException(
+                    "You can't accept friendship request");
         }
-        if(request.getStatus() != FriendShipStatus.PENDING){
-            throw new RuntimeException("Friendship request has already been processed");
+        if (request.getStatus() != FriendShipStatus.PENDING) {
+            throw new RuntimeException(
+                    "Friendship request has already been processed");
         }
 
         request.setStatus(FriendShipStatus.ACCEPTED);
         friendsRepository.save(request);
     }
 
-    public List<FriendResponseDTO> getMyFriends(Authentication connectedUser){
+    /**
+     * LÓGICA: OBTENER TODA LA LISTA DE AMIGOS.
+     * Mostar la lista de amigos que posee cada usuario.
+     * @param connectedUser Usuario activo validado desde el token
+     * de seguridad
+     * @return Una lista con todos los amigos que posee el usuario.
+     */
+    public List<FriendResponseDTO> getMyFriends(
+            final Authentication connectedUser
+    ) {
         User currentUser = (User) connectedUser.getPrincipal();
 
-        List<Friends> acceptedFriendShip = friendsRepository.findAllByUserAndStatus(currentUser, FriendShipStatus.ACCEPTED);
+        List<Friends> acceptedFriendShip = friendsRepository
+                .findAllByUserAndStatus(currentUser, FriendShipStatus.ACCEPTED);
 
         return acceptedFriendShip.stream()
                 .map(friendship -> {
-                    User friend = friendship.getRequester().getId().equals(currentUser.getId())
+                    User friend = friendship.getRequester()
+                            .getId().equals(currentUser.getId())
                             ? friendship.getAddressee()
                             : friendship.getRequester();
                     return mapToFriendResponseDTO(friend);
@@ -77,7 +126,19 @@ public class FriendsService {
                 .collect(Collectors.toList());
     }
 
-    private FriendResponseDTO mapToFriendResponseDTO(User user) {
+    /**
+     * Convierte una entidad User en un objeto
+     * de transferencia de datos (FriendResponseDTO).
+     * Se utiliza para enviar al cliente únicamente
+     * la información pública y necesaria de un amigo.
+     *
+     * @param user La entidad del usuario que se desea mapear.
+     * @return Un objeto FriendResponseDTO con los datos
+     * básicos del amigo listos para el frontend.
+     */
+    private FriendResponseDTO mapToFriendResponseDTO(
+            final User user
+    ) {
         return FriendResponseDTO.builder()
                 .id(user.getId())
                 .name(user.getNickName())
@@ -85,10 +146,22 @@ public class FriendsService {
                 .build();
     }
 
-    public List<FriendRequestDTO> getMyPendingRequests(Authentication connectedUser){
+    /**
+     * LÓGICA: OBTENER LAS PETICIONES DE AMISTADES PENDIENTES.
+     * Busca si existen peticiones de amistad para el usuario.
+     * @param connectedUser Usuario activo validado desde el token
+     * de seguridad.
+     * @return Una lista con todos las peticiones de amistad
+     * pendiente por aceptar o rechazar.
+     */
+    public List<FriendRequestDTO> getMyPendingRequests(
+            final Authentication connectedUser
+    ) {
         User currentUser = (User) connectedUser.getPrincipal();
 
-        List<Friends> pendingRequests = friendsRepository.findPendingRequestForUser(currentUser, FriendShipStatus.PENDING);
+        List<Friends> pendingRequests = friendsRepository
+                .findPendingRequestForUser(
+                        currentUser, FriendShipStatus.PENDING);
 
         return pendingRequests.stream()
                 .map(request -> FriendRequestDTO.builder()
@@ -99,5 +172,5 @@ public class FriendsService {
                         .build())
                 .collect(Collectors.toList());
     }
-
 }
+
