@@ -24,7 +24,8 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
  */
 @Component
 @RequiredArgsConstructor
-public final class WebSocketEventListener {
+@SuppressWarnings("checkstyle:DesignForExtension")
+public class WebSocketEventListener {
 
     /** Repositorio para actualizar
      * el estado del usuario en la BD. */
