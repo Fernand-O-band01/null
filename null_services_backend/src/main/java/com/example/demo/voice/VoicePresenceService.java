@@ -9,47 +9,97 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Servicio encargado de gestionar el estado de
+ * presencia en los canales de voz en memoria.
+ * Mantiene un registro en tiempo real de qué usuarios
+ * están conectados a qué canales,
+ * utilizando estructuras de datos concurrentes para
+ * la integridad en entornos multi-hilo.
+ */
 @Service
 @RequiredArgsConstructor
-public class VoicePresenceService {
+public final class VoicePresenceService {
 
+    /**
+     * Plantilla de mensajería para
+     * enviar actualizaciones de estado vía WebSockets.
+     */
     private final SimpMessagingTemplate messagingTemplate;
 
-    // 🌍 El Mapa Maestro: ServerId -> (ChannelId -> Lista de Participantes)
-    private final Map<Long, Map<Long, Set<VoiceParticipant>>> activeVoiceRooms = new ConcurrentHashMap<>();
+    /**
+     * Mapa concurrente que almacena el
+     * estado global de las salas de voz.
+     * Estructura: ServerId
+     * -> (ChannelId -> Conjunto de Participantes).
+     */
+    private final Map<Long, Map<Long, Set<VoiceParticipant>>> activeVoiceRooms =
+            new ConcurrentHashMap<>();
 
-    public void joinRoom(Long serverId, Long channelId, VoiceParticipant participant) {
-        // 1. Buscamos el servidor (si no existe, lo creamos en RAM)
-        activeVoiceRooms.computeIfAbsent(serverId, k -> new ConcurrentHashMap<>())
-                // 2. Buscamos el canal (si no existe, lo creamos)
+    /**
+     * Registra la entrada de un participante en
+     * una sala de voz y notifica a los suscriptores.
+     * Utiliza computeIfAbsent para asegurar
+     * la creación segura de mapas anidados.
+     *
+     * @param serverId El identificador del servidor.
+     * @param channelId El identificador del canal de voz.
+     * @param participant El objeto con la información
+     *                    del usuario que se une.
+     */
+    public void joinRoom(
+            final Long serverId,
+            final Long channelId,
+            final VoiceParticipant participant) {
+        activeVoiceRooms.computeIfAbsent(serverId,
+                        k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(channelId, k -> ConcurrentHashMap.newKeySet())
-                // 3. Agregamos al usuario
                 .add(participant);
 
-        // 4. Avisamos a todos en el servidor
         broadcastState(serverId);
     }
 
-    public void leaveRoom(Long serverId, Long channelId, Long userId) {
-        Map<Long, Set<VoiceParticipant>> serverRooms = activeVoiceRooms.get(serverId);
+    /**
+     * Elimina a un usuario de una sala de voz y
+     * limpia la memoria si el canal queda vacío.
+     *
+     * @param serverId El identificador del servidor.
+     * @param channelId El identificador del canal de voz.
+     * @param userId El identificador único del usuario que sale.
+     */
+    public void leaveRoom(
+            final Long serverId,
+            final Long channelId,
+            final Long userId) {
+        Map<Long, Set<VoiceParticipant>> serverRooms
+                =
+                activeVoiceRooms.get(serverId);
 
         if (serverRooms != null && serverRooms.containsKey(channelId)) {
-            // Eliminamos al usuario de la lista
-            serverRooms.get(channelId).removeIf(p -> p.getUserId().longValue() == userId.longValue());
+            serverRooms.get(channelId).removeIf(
+                    p -> p.getUserId().equals(userId));
 
-            // Si el canal quedó vacío, limpiamos la memoria
             if (serverRooms.get(channelId).isEmpty()) {
                 serverRooms.remove(channelId);
             }
 
-            // Avisamos a todos
             broadcastState(serverId);
         }
     }
 
-    // 📢 El Megáfono: Envía el estado completo del servidor por STOMP
-    public void broadcastState(Long serverId) {
-        Map<Long, Set<VoiceParticipant>> serverState = activeVoiceRooms.getOrDefault(serverId, new HashMap<>());
+    /**
+     * Emite el estado completo de presencia de voz
+     * de un servidor a un tópico STOMP específico.
+     * Permite que todos los clientes conectados al
+     * servidor vean quién está en cada canal.
+     *
+     * @param serverId El identificador del servidor
+     * cuyo estado se va a difundir.
+     */
+    public void broadcastState(
+            final Long serverId) {
+        Map<Long, Set<VoiceParticipant>> serverState =
+                activeVoiceRooms.getOrDefault(serverId, new HashMap<>());
         String topic = "/topic/server/" + serverId + "/voice-presence";
 
         messagingTemplate.convertAndSend(topic, serverState);
