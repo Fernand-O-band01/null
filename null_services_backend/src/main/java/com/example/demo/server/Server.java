@@ -1,17 +1,34 @@
 package com.example.demo.server;
 
 import com.example.demo.user.User;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Set;
 
 /**
- * Entidad que representa un Servidor o Comunidad dentro de la plataforma.
+ * Entidad que representa un Servidor o Comunidad
+ * dentro de la plataforma.
  * <p>
- * Un servidor actúa como un contenedor para múltiples usuarios y, en etapas posteriores,
- * para canales de texto y voz. Gestiona la propiedad del espacio (Owner) y la lista
+ * Un servidor actúa como un contenedor para
+ * múltiples usuarios y, en etapas posteriores,
+ * para canales de texto y voz. Gestiona la
+ * propiedad del espacio (Owner) y la lista
  * de participantes autorizados (Members).
  * </p>
  */
@@ -25,7 +42,8 @@ public class Server {
 
     /**
      * Identificador único del servidor.
-     * Se utiliza GenerationType.IDENTITY para delegar el autoincremento a la base de datos.
+     * Se utiliza GenerationType.IDENTITY para
+     * delegar el autoincremento a la base de datos.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,22 +51,26 @@ public class Server {
 
     /**
      * Nombre del servidor (ej. "Comunidad de Devs").
-     * Se marca como único para mantener la identidad clara dentro de la plataforma.
+     * Se marca como único para mantener la identidad
+     * clara dentro de la plataforma.
      */
     @Column(unique = true)
     private String name;
 
     /**
      * URL de la imagen o icono del servidor.
-     * Almacena la ruta a un servicio de almacenamiento (ej. AWS S3 o Cloudinary).
+     * Almacena la ruta a un servicio de almacenamiento
+     * (ej. AWS S3 o Cloudinary).
      */
     private String imageUrl;
 
     /**
      * El usuario creador y administrador principal del servidor.
      * <p>
-     * Relación Muchos-a-Uno: Un usuario puede ser dueño de múltiples servidores,
-     * pero un servidor solo tiene un propietario legal en este modelo.
+     * Relación Muchos-a-Uno: Un usuario puede
+     * ser dueño de múltiples servidores,
+     * pero un servidor solo tiene un propietario
+     * legal en este modelo.
      * </p>
      */
     @ManyToOne
@@ -58,10 +80,13 @@ public class Server {
     /**
      * Conjunto de usuarios que forman parte del servidor.
      * <p>
-     * Relación Muchos-a-Muchos: Se utiliza una tabla intermedia 'server_members'
-     * para mapear qué usuarios pertenecen a qué servidores.
-     * Se utiliza {@link Set} en lugar de List para garantizar que un mismo usuario
-     * no pueda unirse al mismo servidor más de una vez (unicidad de miembros).
+     * Relación Muchos-a-Muchos: Se utiliza una tabla
+     * intermedia 'server_members' para mapear qué usuarios
+     * pertenecen a qué servidores.
+     * Se utiliza {@link Set} en lugar de List para
+     * garantizar que un mismo usuario
+     * no pueda unirse al mismo servidor más de una vez
+     * (unicidad de miembros).
      * </p>
      */
     @ManyToMany
@@ -73,13 +98,16 @@ public class Server {
     private Set<User> members;
 
     /**
-     * Lista de canales de texto o voz que pertenecen a este servidor.
+     * Lista de canales de texto o voz que
+     * pertenecen a este servidor.
      * <p>
-     * Relación Uno-a-Muchos: Si el servidor se elimina, se eliminan en cascada
+     * Relación Uno-a-Muchos: Si el servidor
+     * se elimina, se eliminan en cascada
      * todos sus canales (CascadeType.ALL y orphanRemoval = true).
      * </p>
      */
-    @OneToMany(mappedBy = "server", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "server",
+            cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Channel> channels;
 
 }
