@@ -10,33 +10,49 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Servicio encargado de orquestar la lógica de negocio para los Servidores.
- * <p>
- * Gestiona la creación de comunidades, la recuperación de las mismas y la
- * transformación de las entidades persistentes en objetos de respuesta (DTOs).
+ * Servicio encargado de orquestar la
+ * lógica de negocio para los Servidores.
+ *
+ * Gestiona la creación de comunidades, la recuperación
+ * de las mismas y la transformación de las entidades
+ * persistentes en objetos de respuesta (DTOs).
  * Actúa como intermediario entre el controlador y la capa de datos.
- * </p>
+ *
  */
 @Service
 @RequiredArgsConstructor
-public class ServerService {
+public final class ServerService {
 
+    /**
+     * Repositorio JPA para la gestión de la entidad Server en la base de datos.
+     * Proporciona los métodos necesarios para realizar
+     * operaciones de persistencia,
+     * recuperación y eliminación de las comunidades, garantizando
+     * la integridad de los datos.
+     */
     private final ServerRepository serverRepository;
 
     /**
-     * Crea un nuevo servidor en el sistema y asigna al creador como dueño y miembro.
-     * <p>
-     * NOTA DE ARQUITECTURA: Al usar {@link Set#of(Object)}, garantizamos que el servidor
-     * inicie con al menos un miembro (el propietario). Esto es vital para que las
-     * consultas de "mis servidores" funcionen correctamente desde el minuto uno.
-     * </p>
+     * Crea un nuevo servidor en el sistema y asigna
+     * al creador como dueño y miembro.
+
+     * NOTA DE ARQUITECTURA: Al usar {@link Set#of(Object)},
+     * garantizamos que el servidor inicie con al menos
+     * un miembro (el propietario). Esto es vital para que las
+     * consultas de "mis servidores" funcionen correctamente
+     * desde el minuto uno.
      *
-     * @param request DTO con la información básica del servidor (nombre, imagen).
-     * @param connectedUser Objeto de autenticación del usuario que solicita la creación.
-     * @return {@link ServerResponse} con los datos del servidor persistido.
+     * @param request DTO con la información básica
+     * del servidor (nombre, imagen).
+     * @param connectedUser Objeto de autenticación
+     * del usuario que solicita la creación.
+     * @return {@link ServerResponse} con los datos del servidor
+     * persistido.
      */
 
-    public ServerResponse createServer(ServerRequest request, Authentication connectedUser) {
+    public ServerResponse createServer(
+            final ServerRequest request,
+            final Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
 
         Server newServer = Server.builder()
@@ -46,7 +62,7 @@ public class ServerService {
                 .members(Set.of(user))
                 .build();
 
-        // 🚀 Le creamos su canal por defecto
+        // Creamos su canal por defecto
         Channel defaultChannel = Channel.builder()
                 .name("general")
                 .type("TEXT")
@@ -60,13 +76,14 @@ public class ServerService {
     }
 
     /**
-     * Recupera todos los servidores registrados en la plataforma.
-     * <p>
-     * Ideal para funciones de "Explorar" o "Descubrir" donde se muestran
-     * comunidades públicas a los usuarios.
-     * </p>
+     * Recupera todos los servidores
+     * registrados en la plataforma.
+
+     * Ideal para funciones de "Explorar" o "Descubrir"
+     * donde se muestran comunidades públicas a los usuarios.
      *
-     * @return Lista de todos los servidores mapeados a sus respuestas DTO.
+     * @return Lista de todos los servidores
+     * mapeados a sus respuestas DTO.
      */
     public List<ServerResponse> findAll() {
         return serverRepository.findAll()
@@ -76,16 +93,18 @@ public class ServerService {
     }
 
     /**
-     * Obtiene la lista de servidores a los que el usuario autenticado pertenece.
-     * <p>
-     * Utiliza el ID extraído del token JWT para filtrar en la base de datos a través
-     * de la relación Many-to-Many.
-     * </p>
+     * Obtiene la lista de servidores a los
+     * que el usuario autenticado pertenece.
+
+     * Utiliza el ID extraído del token JWT para
+     * filtrar en la base de datos a través de la relación
+     * Many-to-Many.
      *
      * @param connectedUser Usuario autenticado que realiza la consulta.
      * @return Lista de servidores asociados al usuario.
      */
-    public List<ServerResponse> findByUser(Authentication connectedUser) {
+    public List<ServerResponse> findByUser(
+            final Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
         return serverRepository.findAllByMembersId(user.getId())
                 .stream()
@@ -94,9 +113,11 @@ public class ServerService {
     }
 
     /**
-     * Método helper privado para transformar una Entidad Server en un DTO ServerResponse.
+     * Método helper privado para transformar
+     * una Entidad Server en un DTO ServerResponse.
      * <p>
-     * Este mapeo manual asegura que no enviemos datos internos de la base de datos
+     * Este mapeo manual asegura que no enviemos
+     * datos internos de la base de datos
      * ni relaciones circulares hacia el Frontend.
      * </p>
      *
@@ -104,7 +125,8 @@ public class ServerService {
      * @return El objeto de respuesta listo para JSON.
      */
 
-    private ServerResponse mapToResponse(Server server) {
+    private ServerResponse mapToResponse(
+            final Server server) {
         // Mapeamos la lista de Entidades Channel a ChannelResponse
         List<ChannelResponse> channelResponses = server.getChannels() != null
                 ? server.getChannels().stream()
@@ -118,12 +140,14 @@ public class ServerService {
 
         List<MemberResponse> memberResponses = server.getMembers() != null
                 ? server.getMembers().stream()
-                // Asegúrate de usar los métodos correctos de tu entidad User (getNickname, getUsername, etc.)
                 .map(member -> MemberResponse.builder()
                         .id(member.getId())
-                        .username(member.getUsername()) // O el campo que uses en tu User
-                        .imageUrl(member.getImageUrl()) // Si tienes avatar
-                        .status(member.getStatus() != null ? member.getStatus().name() : "OFFLINE")
+                        .username(member.getUsername())
+                        .imageUrl(member.getImageUrl())
+                        .status(member.getStatus()
+                                != null
+                                ?
+                                member.getStatus().name() : "OFFLINE")
                         .build())
                 .collect(Collectors.toList())
                 : List.of();
@@ -134,13 +158,28 @@ public class ServerService {
                 .imageUrl(server.getImageUrl())
                 .ownerId(server.getOwner().getId())
                 .channels(channelResponses)
-                .members(memberResponses)// Agregamos los canales al DTO
+                .members(memberResponses)
                 .build();
     }
 
-    public ServerResponse findById(Long serverId) {
+    /**
+     * Busca y recupera la información detallada de
+     * un servidor específico utilizando su ID.
+     * Si el servidor no existe en la base de datos, lanza
+     * una excepción para evitar
+     * que la aplicación continúe su ejecución con datos nulos.
+     *
+     * @param serverId El identificador único del servidor a buscar.
+     * @return Un objeto ServerResponse con los
+     * datos mapeados del servidor.
+     * @throws RuntimeException Si no se encuentra
+     * ningún servidor con el ID proporcionado.
+     */
+    public ServerResponse findById(
+            final Long serverId) {
         Server server = serverRepository.findById(serverId)
-                .orElseThrow(() -> new RuntimeException("Servidor no encontrado"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Servidor no encontrado"));
         return mapToResponse(server);
     }
 
@@ -151,13 +190,17 @@ public class ServerService {
      * @param connectedUser El usuario autenticado actual.
      * @return El servidor actualizado.
      */
-    public ServerResponse joinServer(Long serverId, Authentication connectedUser) {
+    public ServerResponse joinServer(
+            final Long serverId,
+            final Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
 
         Server server = serverRepository.findById(serverId)
-                .orElseThrow(() -> new RuntimeException("¡Servidor no encontrado!"));
+                .orElseThrow(() -> new RuntimeException(
+                        "¡Servidor no encontrado!"));
 
-        // Añadimos el usuario al Set de miembros (como es un Set, si ya está, no se duplica)
+        // Añadimos el usuario al
+        // Set de miembros (como es un Set, si ya está, no se duplica)
         server.getMembers().add(user);
 
         Server savedServer = serverRepository.save(server);
@@ -172,85 +215,120 @@ public class ServerService {
      * @param serverId ID del servidor a abandonar.
      * @param connectedUser El usuario que hace la petición.
      */
-    public void leaveServer(Long serverId, Authentication connectedUser) {
+    public void leaveServer(
+            final Long serverId,
+            final Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
 
         Server server = serverRepository.findById(serverId)
-                .orElseThrow(() -> new RuntimeException("¡Servidor no encontrado!"));
+                .orElseThrow(() -> new RuntimeException(
+                        "¡Servidor no encontrado!"));
 
-        // 🚀 Regla de negocio: El dueño no puede abandonar su propio barco
         if (server.getOwner().getId().equals(user.getId())) {
-            throw new RuntimeException("El propietario no puede abandonar el servidor. Debes eliminarlo.");
+            throw new RuntimeException(
+                    "El propietario no puede abandonar el servidor. "
+                            +
+                            "Debes eliminarlo.");
         }
 
-        // 🚀 Removemos al usuario de la lista de miembros
-        server.getMembers().removeIf(member -> member.getId().equals(user.getId()));
+        // Removemos al usuario de la lista de miembros
+        server.getMembers().removeIf(member
+                ->
+                member.getId().equals(user.getId()));
 
         serverRepository.save(server);
     }
 
     /**
      * Crea un nuevo canal dentro de un servidor existente.
-     * 🚀 SOLO EL DUEÑO PUEDE HACER ESTO.
+     * Validando estrictamente que solo el
+     * propietario del servidor tenga permisos
+     * para realizar esta acción.
+     *
+     * @param serverId El identificador único del servidor padre.
+     * @param request El objeto con los datos solicitados
+     * para el nuevo canal (nombre, tipo, privacidad).
+     * @param connectedUser El usuario autenticado que intenta crear el canal.
+     * @return Un objeto ChannelResponse con los datos
+     * del canal recién creado para enviarlo al cliente.
+     * @throws RuntimeException Si el servidor no existe o si
+     * el usuario no es el propietario.
      */
-    public ChannelResponse createChannel(Long serverId, ChannelRequest request, Authentication connectedUser) {
+    public ChannelResponse createChannel(
+            final Long serverId,
+            final ChannelRequest request,
+            final Authentication connectedUser) {
+
         // Obtenemos al usuario que hace la petición
         User user = (User) connectedUser.getPrincipal();
 
-        // 1. Buscamos el servidor
+        // Buscamos el servidor
         Server server = serverRepository.findById(serverId)
-                .orElseThrow(() -> new RuntimeException("Servidor no encontrado"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Servidor no encontrado"));
 
-        // 🚀 CANDADO DE SEGURIDAD: Validamos que el usuario sea el dueño
+        // CANDADO DE SEGURIDAD: Validamos que el usuario sea el dueño
         if (!server.getOwner().getId().equals(user.getId())) {
-            throw new RuntimeException("Solo el dueño puede crear canales en este servidor.");
+            throw new RuntimeException(
+                    "Solo el dueño puede crear canales en este servidor.");
         }
 
-        // 2. Formateamos el nombre (minúsculas y guiones, estilo Discord)
-        String formattedName = request.getName().trim().toLowerCase().replaceAll("\\s+", "-");
+        // Formateamos el nombre (minúsculas y guiones, estilo Discord)
+        String formattedName = request.getName()
+                .trim()
+                .toLowerCase()
+                .replaceAll("\\s+", "-");
 
-        // 3. Creamos la entidad Channel
+        // Creamos la entidad Channel
         Channel newChannel = Channel.builder()
                 .name(formattedName)
                 .type(request.getType() != null ? request.getType() : "TEXT")
-                // 🚀 Protección extra contra nulos por si acaso
-                .isPrivate(request.getIsPrivate() != null ? request.getIsPrivate() : false)
+                // Protección extra contra nulos por si acaso
+                .isPrivate(request.getIsPrivate()
+                        != null
+                        ?
+                        request.getIsPrivate() : false)
                 .server(server)
                 .build();
 
-        // 4. Lo añadimos a la lista del servidor y guardamos
+        // Lo añadimos a la lista del servidor y guardamos
         server.getChannels().add(newChannel);
         serverRepository.save(server);
 
-        // 5. Retornamos la respuesta
+        // Retornamos la respuesta
         return ChannelResponse.builder()
                 .id(newChannel.getId())
                 .name(newChannel.getName())
                 .type(newChannel.getType())
-                .isPrivate(newChannel.getIsPrivate()) // Añadimos esto para que Angular lo sepa
+                .isPrivate(newChannel.getIsPrivate())
                 .build();
     }
 
     /**
-     * Elimina permanentemente un servidor y todos sus canales asociados.
-     * 🚀 SOLO EL DUEÑO PUEDE HACER ESTO.
+     * Elimina permanentemente un servidor y todos
+     * sus canales asociados.
+     * SOLO EL DUEÑO PUEDE HACER ESTO.
      *
      * @param serverId ID del servidor a eliminar.
      * @param connectedUser El usuario que hace la petición.
      */
-    public void deleteServer(Long serverId, Authentication connectedUser) {
+    public void deleteServer(
+            final Long serverId,
+            final Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
         Server server = serverRepository.findById(serverId)
-                .orElseThrow(() -> new RuntimeException("Servidor no encontrado"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Servidor no encontrado"));
 
-        // 🚀 CANDADO DE SEGURIDAD: Validamos que solo el dueño pueda borrarlo
+        // Validamos que solo el dueño pueda borrarlo
         if (!server.getOwner().getId().equals(user.getId())) {
-            throw new RuntimeException("Acceso denegado: Solo el propietario puede eliminar este servidor.");
+            throw new RuntimeException(
+                    "Acceso denegado: "
+                            +
+                            "No posees permisos.");
         }
 
         // Eliminamos el servidor.
-        // Nota: Si tienes configurado CascadeType.ALL en tu entidad Server (hacia canales),
-        // esto borrará automáticamente todos los canales asociados.
         serverRepository.delete(server);
     }
 }
