@@ -9,7 +9,7 @@ import { CommonModule} from '@angular/common';
 })
 export class DiscoverSidebar {
 
-  activeTab: string = 'server';
+  activeTab = 'server';
 
   setActiveTab(tab: string) {
     this.activeTab = tab;
