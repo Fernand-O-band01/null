@@ -1,7 +1,6 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 // 🚀 IMPORTACIONES CORRECTAS DE TU API
@@ -12,6 +11,8 @@ import { FriendsControllerService } from '../../../../../../../services/api';
 
 import { ChatNavigationService } from '../../../../../../../services/api/chat-navigation-service/chat-navigation-service';
 import { PresenceService } from '../../../../../../../services/api/presence/presence';
+
+import { ConversationResponse } from '../../../../../../../services/api';
 
 @Component({
   selector: 'app-create-dm-modal',
@@ -25,24 +26,22 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   // Estado
   friendsList: FriendResponseDTO[] = [];
   selectedFriendIds = new Set<number>();
-  searchTerm: string = '';
-  showDuplicateWarning: boolean = false;
+  searchTerm= '';
+  showDuplicateWarning = false;
   private sub?: Subscription;
   private presenceSubs: Subscription = new Subscription();
+  
+  private friendsDataService = inject(FriendsDataService)
+  private modalService = inject(Modalservice)
+  private conversationControllerService = inject(ConversationControllerService)
+  private chatNavigationService = inject(ChatNavigationService)
+  private cdr = inject(ChangeDetectorRef)
+  private presenceService = inject(PresenceService)
+  private friendService = inject(FriendsControllerService)
 
-  constructor(
-    private friendsDataService: FriendsDataService,
-    private modalService: Modalservice,
-    private conversationControllerService: ConversationControllerService, // 🚀 AHORA SÍ ES TU SERVICIO REAL
-    private router: Router,
-    private chatNavigationService: ChatNavigationService,
-    private cdr: ChangeDetectorRef,
-    private presenceService: PresenceService,
-    private friendService: FriendsControllerService
-  ) {}
 
   ngOnInit(): void {
-    // 🚀 Pedimos la lista fresca directamente al backend al abrir el modal
+    //  Pedimos la lista fresca directamente al backend al abrir el modal
     this.sub = this.friendService.getMyFriends().subscribe({
       next: (friends) => {
         this.friendsList = friends;
@@ -68,7 +67,7 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
     
     if (index !== -1) {
       // Actualizamos el objeto para que Angular detecte el cambio en el HTML
-      this.friendsList[index] = { ...this.friendsList[index], status: newStatus as any };
+      this.friendsList[index] = { ...this.friendsList[index], status: newStatus as FriendResponseDTO['status'] };
       this.cdr.detectChanges();
     }
   }
@@ -157,7 +156,7 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   /**
    * 🧠 Función que compara los nombres seleccionados con los chats existentes
    */
-  private checkIfGroupExists(newIds: number[], conversations: any[]): boolean {
+  private checkIfGroupExists(newIds: number[], conversations:ConversationResponse[]): boolean {
     // 1. Obtenemos los nombres de los amigos que seleccionaste y los ordenamos alfabéticamente
     const selectedNames = newIds.map(id => {
       const friend = this.friendsList.find(f => f.id === id);
@@ -186,21 +185,21 @@ export class CreateDmModalComponent implements OnInit, OnDestroy {
   private executeCreation(ids: number[]) {
     if (ids.length === 1) {
       // API para 1 vs 1
-      this.conversationControllerService.createConversation(ids[0] as any).subscribe({
-        next: (response: any) => {
+      this.conversationControllerService.createConversation(ids[0]!).subscribe({
+        next: (response: ConversationResponse) => {
           this.closeModal();
           const name = this.friendsList.find(f => f.id === ids[0])?.name || response.otherUserName || 'Usuario';
-          this.chatNavigationService.openChat(response.id, name);
+          this.chatNavigationService.openChat(response.id!, name);
         },
         error: (err) => console.error('Error al crear DM 1v1', err)
       });
     } else {
       // API para Grupos
       this.conversationControllerService.createGroupConversation(ids).subscribe({
-        next: (response: any) => {
+        next: (response: ConversationResponse) => {
           this.closeModal();
           const groupName = response.otherUserName || 'Grupo Nuevo';
-          this.chatNavigationService.openChat(response.id, groupName);
+          this.chatNavigationService.openChat(response.id!, groupName);
         },
         error: (err) => console.error('Error al crear DM Grupal', err)
       });

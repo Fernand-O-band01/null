@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
-import { ServerControllerService, ServerResponse, MessageControllerService, Message, AuthenticationService } from '../../../../../services/api';
+import { ServerControllerService, ServerResponse, MessageControllerService, Message, AuthenticationService, ChannelResponse } from '../../../../../services/api';
 import { Websocket } from '../../../../../services/api/websocket/websocket';
 import { AuthService } from '../../../../../services/api/authservice/auth-service';
 import { Token } from '../../../../../services/api/token/token';
@@ -59,6 +59,8 @@ export class Server implements OnInit, OnDestroy {
   currentServerId: number | null = null;
   serverData: ServerResponse | null = null;
   activeChannelId: number | null = null;
+  activeChannelName = 'general'; 
+  activeChannelType = 'TEXT';
   
   isMembersListOpen: boolean = true;
   isServerMenuOpen: boolean = false;
@@ -142,6 +144,8 @@ export class Server implements OnInit, OnDestroy {
           this.selectChannel(data.channels[0].id);
         } else {
           this.activeChannelId = null;
+          this.activeChannelName = 'general';
+          this.activeChannelType = 'TEXT';
         }
         this.cdr.detectChanges();
       },
@@ -152,18 +156,22 @@ export class Server implements OnInit, OnDestroy {
   selectChannel(channelId: number | undefined): void {
     if (channelId === undefined || !this.serverData?.channels) return;
     
-    const channel = this.serverData.channels.find(c => c.id === channelId);
+    const channel = this.serverData.channels.find(c => Number(c.id) === Number(channelId));
     if (!channel) return;
 
     this.activeChannelId = channelId;
+    this.activeChannelName = channel.name || 'general'; 
+    this.activeChannelType = channel.type || 'TEXT';
+
+    this.messages = [];
 
     if (channel.type === 'VOICE') {
       console.log('🎙️ Entrando a canal de voz:', channel.name);
-      this.joinVoiceChannel(channelId);
+      this.joinVoiceChannel(this.activeChannelId);
     } else {
       this.leaveVoiceChannel(); 
-      this.loadChannelHistory(channelId);
-      this.connectToChannelTopic(channelId);
+      this.loadChannelHistory(this.activeChannelId);
+      this.connectToChannelTopic(this.activeChannelId);
     }
 
     this.cdr.detectChanges(); 
@@ -171,7 +179,7 @@ export class Server implements OnInit, OnDestroy {
 
   getActiveChannelType(): string {
     if (!this.serverData?.channels || !this.activeChannelId) return 'TEXT';
-    const channel = this.serverData.channels.find(c => c.id === this.activeChannelId);
+    const channel = this.serverData.channels.find(c => Number(c.id) === Number(this.activeChannelId));
     return channel?.type || 'TEXT';
   }
 
@@ -385,23 +393,25 @@ export class Server implements OnInit, OnDestroy {
     });
   }
 
-  isCreateChannelModalOpen: boolean = false;
+  isCreateChannelModalOpen = false;
 
   openCreateChannelModal(): void {
     this.isCreateChannelModalOpen = true;
   }
 
-  onChannelCreated(newChannel: any): void {
+  onChannelCreated(newChannel: ChannelResponse): void {
     this.isCreateChannelModalOpen = false; 
     
     if (this.serverData) {
       if (!this.serverData.channels) {
         this.serverData.channels = [];
       }
-      this.serverData.channels.push(newChannel);
+      this.serverData.channels = [...this.serverData.channels, newChannel];
     }
+
+    const channelType = newChannel.type?.toUpperCase();
     
-    if (newChannel.type === 'TEXT') {
+    if (channelType === 'TEXT' || channelType === 'VOICE') {
       this.selectChannel(newChannel.id);
     }
     
@@ -418,7 +428,7 @@ export class Server implements OnInit, OnDestroy {
 
   getActiveChannelName(): string {
     if (!this.serverData?.channels || !this.activeChannelId) return 'general';
-    const channel = this.serverData.channels.find(c => c.id === this.activeChannelId);
+    const channel = this.serverData.channels.find(c => Number(c.id) === Number(this.activeChannelId));
     return channel?.name || 'general';
   }
 
@@ -431,7 +441,7 @@ export class Server implements OnInit, OnDestroy {
     return Number(this.serverData.ownerId) === Number(this.myUserId);
   }
 
-  isDeleteServerModalOpen: boolean = false;
+  isDeleteServerModalOpen = false;
 
   openDeleteServerModal(): void {
     this.isServerMenuOpen = false; 

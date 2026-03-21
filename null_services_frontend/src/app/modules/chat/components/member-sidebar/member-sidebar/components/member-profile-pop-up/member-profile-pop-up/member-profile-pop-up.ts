@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MemberResponse } from '../../../../../../../../services/api';
 
 @Component({
   selector: 'app-member-profile-pop-up',
@@ -10,8 +11,8 @@ import { CommonModule } from '@angular/common';
 })
 export class MemberProfilePopUp {
 
-@Input({required: true}) member: any;
-@Output() close = new EventEmitter<void>();
-@Input() topPosition: number = 0;
+@Input({required: true}) member!: MemberResponse;
+@Output() closePopUp = new EventEmitter<void>();
+@Input() topPosition = 0;
 
 }

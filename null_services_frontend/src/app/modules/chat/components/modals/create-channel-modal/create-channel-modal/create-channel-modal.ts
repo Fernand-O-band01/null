@@ -1,6 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+import { ChannelRequest, ChannelResponse } from '../../../../../../services/api';
 
 import { ServerControllerService} from '../../../../../../services/api';
 
@@ -13,19 +15,17 @@ import { ServerControllerService} from '../../../../../../services/api';
 export class CreateChannelModal {
 
   @Input({required: true}) serverId!: number;
-  @Output() close = new EventEmitter<void>();
-  @Output() channelCreated = new EventEmitter<any>();
+  @Output() closePopUp = new EventEmitter<void>();
+  @Output() channelCreated = new EventEmitter<ChannelResponse>();
 
-  newChannelName: string = '';
+  newChannelName = '';
   newChannelType: 'TEXT' | 'VOICE' = 'TEXT';
-  isPrivateChannel: boolean = false;
+  isPrivateChannel = false;
 
-  constructor(
-    private serverService: ServerControllerService
-  ){}
+  private serverService = inject(ServerControllerService)
 
   closeModal(): void{
-    this.close.emit()
+    this.closePopUp.emit()
   }
 
   createChannel(): void {
@@ -35,15 +35,15 @@ export class CreateChannelModal {
     const formattedName = this.newChannelName.trim().toLowerCase().replace(/\s+/g, '-');
 
     // Construimos el DTO según la estructura de tu Backend
-    const request = {
+    const request: ChannelRequest = {
       name: formattedName,
       type: this.newChannelType,
       isPrivate: this.isPrivateChannel // El nombre debe coincidir con el ChannelRequest de Java
     };
 
     // Llamada directa al Backend
-    this.serverService.createChannel(this.serverId, request as any).subscribe({
-      next: (newChannel: any) => {
+    this.serverService.createChannel(this.serverId, request).subscribe({
+      next: (newChannel: ChannelResponse) => {
         // 🚀 ¡Éxito! Le enviamos el canal recién horneado al componente padre (Server)
         this.channelCreated.emit(newChannel);
       },

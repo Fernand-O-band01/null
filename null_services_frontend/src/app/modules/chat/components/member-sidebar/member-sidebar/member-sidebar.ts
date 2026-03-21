@@ -1,9 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule, UpperCasePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 
 import { MemberProfilePopUp } from './components/member-profile-pop-up/member-profile-pop-up/member-profile-pop-up';
 import { PresenceService } from '../../../../../services/api/presence/presence'; // 🚀 Ajusta esta ruta
+import { MemberResponse } from '../../../../../services/api';
 
 @Component({
   selector: 'app-member-sidebar',
@@ -14,16 +15,14 @@ import { PresenceService } from '../../../../../services/api/presence/presence';
 })
 export class MemberSidebar implements OnChanges, OnDestroy {
 
-  @Input() members: any[] = [];
-  selectedMember: any | null = null;
-  popupTop: number = 0;
+  @Input() members: MemberResponse[] = [];
+  selectedMember: MemberResponse | null = null;
+  popupTop = 0;
 
   private presenceSubs: Subscription = new Subscription(); // 🚀 Guardamos las suscripciones
 
-  constructor(
-    private presenceService: PresenceService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private presenceService = inject(PresenceService)
+  private cdr = inject(ChangeDetectorRef)
 
   // 🚀 Se ejecuta cada vez que el padre (Server o Group DM) le manda la lista de miembros
   ngOnChanges(changes: SimpleChanges): void {
@@ -41,8 +40,8 @@ export class MemberSidebar implements OnChanges, OnDestroy {
     this.presenceSubs = new Subscription();
 
     this.members.forEach(member => {
-      if (member.id || member.userId) { // Dependiendo de cómo se llame el ID en tu ServerResponse
-        const idToWatch = member.id || member.userId;
+      if (member.id) { // Dependiendo de cómo se llame el ID en tu ServerResponse
+        const idToWatch = member.id;
         const statusSub = this.presenceService.watchUserStatus(idToWatch).subscribe({
           next: (rawStatus) => {
             const newStatus = rawStatus.replace(/['"]+/g, '').trim().toUpperCase();
@@ -56,7 +55,7 @@ export class MemberSidebar implements OnChanges, OnDestroy {
     });
   }
 
-  toggleProfile(member: any, event: MouseEvent){
+  toggleProfile(member: MemberResponse, event: MouseEvent){
     if(this.selectedMember === member){
       this.selectedMember = null;
     } else {

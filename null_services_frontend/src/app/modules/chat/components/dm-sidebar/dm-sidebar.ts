@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs'; // 🚀 Para gestionar la memoria
 
@@ -26,14 +26,13 @@ export class DmSidebar implements OnInit, OnDestroy {
   private navSub?: Subscription;
 
   // Evento para avisar al componente Home que seleccionamos un chat de la lista
-  @Output() onConversationSelect = new EventEmitter<ConversationResponse>();
+  @Output() conversationSelect = new EventEmitter<ConversationResponse>();
 
-  constructor(
-    private conversationService: ConversationControllerService,
-    private cdr: ChangeDetectorRef,
-    public modalService: Modalservice,
-    private chatNavigationService: ChatNavigationService // 🚀 Inyectamos el "Walkie-Talkie"
-  ){}
+  private conversationService = inject(ConversationControllerService)
+  private cdr = inject(ChangeDetectorRef)
+  public modalService = inject(Modalservice)
+  private chatNavigationService = inject(ChatNavigationService)
+
 
   /**
    * Se ejecuta al arrancar el componente lateral.
@@ -129,7 +128,7 @@ export class DmSidebar implements OnInit, OnDestroy {
    * Al hacer clic en un chat de la lista, avisamos al padre (Home).
    */
   selectConversation(conv: ConversationResponse){
-    this.onConversationSelect.emit(conv);
+    this.conversationSelect.emit(conv);
   }
 
   /**

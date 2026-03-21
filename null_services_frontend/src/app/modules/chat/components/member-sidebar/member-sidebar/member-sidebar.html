@@ -8,7 +8,7 @@
     
     <div class="relative mb-0.5">
       
-      <div (click)="toggleProfile(member, $event)" 
+      <div (click)="toggleProfile(member, $event)"  role="button" tabindex="0" 
            class="flex items-center gap-3 px-2 py-1.5 hover:bg-[#35373c] rounded-md cursor-pointer transition-colors group"
            [ngClass]="{'bg-[#35373c]': selectedMember === member}">
         
@@ -35,7 +35,7 @@
 
       @if (selectedMember === member) {
         <app-member-profile-pop-up
-        [member]="member" (close)="closeProfile()" 
+        [member]="member" (closePopUp)="closeProfile()" 
         [topPosition]="popupTop">
         </app-member-profile-pop-up>
       }

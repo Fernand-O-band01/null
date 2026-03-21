@@ -1,7 +1,7 @@
-<div class="fixed inset-0 bg-black/85 flex justify-center items-center z-[9999] text-[#dbdee1] font-sans" (click)="closeModal()">
+<div class="fixed inset-0 bg-black/85 flex justify-center items-center z-[9999] text-[#dbdee1] font-sans" (click)="closeModal()" role="button" tabindex="0" (keydown.esc)="closeModal()">
   
   <div class="bg-[#313338] w-[440px] max-h-[80vh] rounded-lg flex flex-col overflow-hidden shadow-[0_8px_16px_rgba(0,0,0,0.24)]" 
-       (click)="$event.stopPropagation()">
+       (click)="$event.stopPropagation()" role="button" tabindex="0" >
     
     <div class="p-4 pb-3 flex justify-between items-center">
       <h2 class="text-xl font-semibold text-white m-0">Seleccionar amigos</h2>
@@ -24,7 +24,10 @@
       
       @for (friend of filteredFriends; track friend.id) {
         <div class="flex justify-between items-center p-2 cursor-pointer rounded-[4px] hover:bg-[#3f4147] transition-colors group" 
-             (click)="toggleSelection(friend.id)">
+             (click)="toggleSelection(friend.id)"
+             role="button"
+             tabindex="0"
+             (keydown.enter)="toggleSelection(friend.id)">
           
           <div class="flex items-center gap-3">
             <div class="relative w-8 h-8 flex-shrink-0">
