@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ServerControllerService, ServerResponse } from '../../../../services/api';
@@ -15,11 +15,9 @@ export class DiscoverServers implements OnInit {
 
   publicServers: ServerResponse[] = [];
 
-  constructor(
-    private serverService: ServerControllerService,
-    private cdr: ChangeDetectorRef,
-    private router: Router
-  ) {}
+  private serverService = inject(ServerControllerService)
+  private cdr = inject(ChangeDetectorRef)
+  private router = inject(Router)
 
   ngOnInit() {
     this.loadPublicServers();

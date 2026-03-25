@@ -187,12 +187,13 @@ export class ChatRoom implements OnChanges, OnDestroy {
   isGroup(): boolean {
     return this.friendName ? this.friendName.includes(','): false
   }
+
   getGroupMembers() {
     if (!this.isGroup()) return [];
     return this.friendName.split(',').map((name, index) => ({
       id: index,
       username: name.trim(),
-      imageUrl: null // Opcional: podrías buscar fotos si las tienes
+      imageUrl: undefined  // Opcional: podrías buscar fotos si las tienes
     }));
   }
 

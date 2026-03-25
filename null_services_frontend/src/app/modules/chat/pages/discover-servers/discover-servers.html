@@ -20,7 +20,7 @@
             <div class="h-[120px] w-full bg-[#4c4e53] relative">
               <div class="absolute -bottom-6 left-4 w-12 h-12 rounded-xl bg-[#313338] border-[4px] border-[#2B2D31] flex items-center justify-center font-bold text-xl overflow-hidden text-white shadow-sm z-10">
                 @if (server.imageUrl) {
-                  <img [src]="server.imageUrl" class="w-full h-full object-cover">
+                  <img [src]="server.imageUrl" class="w-full h-full object-cover" title="User" [alt]="server.name || 'Server image'">
                 } @else {
                   {{ server.name?.charAt(0) | uppercase }}
                 }
