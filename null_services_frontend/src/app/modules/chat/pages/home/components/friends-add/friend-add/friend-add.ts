@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -14,15 +14,13 @@ import { RouterLink } from '@angular/router';
 })
 export class FriendAdd {
 
-  targetUserId: string = '';
+  targetUserId = '';
 
-  statusMessage: string = '';
-  isError: boolean = false;
+  statusMessage = '';
+  isError = false;
 
-  constructor(
-    private friendService: FriendsControllerService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private friendService = inject(FriendsControllerService)
+  private cdr = inject(ChangeDetectorRef)
 
   sendFriendRequest() {
     const id = parseInt(this.targetUserId, 10);
@@ -32,7 +30,7 @@ export class FriendAdd {
     }
 
     this.friendService.requestFriends(id).subscribe({
-      next:(response) =>{
+      next:() =>{
         this.showStatus('Friend request sent successfully.', false);
         this.targetUserId = '';
       },
