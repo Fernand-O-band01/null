@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { FriendsControllerService } from '../../../../../../../services/api/api/friendsController.service';
@@ -14,10 +14,8 @@ export class FriendsPending implements OnInit {
 
   pendingRequests: FriendRequestDTO[] = [];
 
-  constructor(
-    private friendsService: FriendsControllerService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private friendsService = inject(FriendsControllerService)
+  private cdr = inject(ChangeDetectorRef)
 
   ngOnInit(): void {
       this.fetchPendingRequests();
