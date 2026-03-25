@@ -46,7 +46,7 @@ export class DmSidebar implements OnInit, OnDestroy {
       this.navSub = this.chatNavigationService.openChat$.subscribe(data => {
         
         // Verificamos si la conversación que acaba de nacer ya está en nuestra lista
-        const alreadyExists = this.conversations.find(c => c.id === data.conversationId);
+        const alreadyExists = this.conversations.find(c => c.id === data.id);
         
         if (!alreadyExists) {
           console.log('✨ Sidebar detectó nuevo chat: Agregando a la lista sin recargar...');
@@ -54,8 +54,8 @@ export class DmSidebar implements OnInit, OnDestroy {
           // Agregamos el nuevo chat al PRINCIPIO de la lista (unshift)
           // Usamos la data que viene del "Walkie-Talkie" { conversationId, friendName }
           this.conversations.unshift({
-            id: data.conversationId,
-            otherUserName: data.friendName
+            id: data.id,
+            otherUserName: data.otherUserName
           });
           
           // 🚀 EL PASO CRUCIAL:

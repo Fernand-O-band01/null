@@ -24,7 +24,7 @@ export class FriendsAll implements OnInit, OnDestroy {
   myUserId!: number; 
   private subscriptions: Subscription = new Subscription();
 
-  @Output() toOpenChat = new EventEmitter<{ conversationId: number | undefined, friendName: string }>();
+  @Output() toOpenChat = new EventEmitter<ConversationResponse>();
 
   private friendService = inject(FriendsControllerService)
   private cdr = inject(ChangeDetectorRef)
@@ -93,7 +93,7 @@ export class FriendsAll implements OnInit, OnDestroy {
 
     this.conversationControllerService.createConversation(friendId).subscribe({
       next: (response: ConversationResponse) => {
-        this.toOpenChat.emit({ conversationId: response.id, friendName: friendName });
+        this.toOpenChat.emit({ id: response.id, otherUserName: friendName });
       },
       error: (error) => {
         console.error('Error creating conversation:', error);

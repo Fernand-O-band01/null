@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; // 🚀 Importamos ChangeDetectorRef
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 
@@ -10,15 +10,16 @@ import { FriendAdd } from '../components/friends-add/friend-add/friend-add';
 import { ChatRoom } from '../components/chat-room/chat-room/chat-room';
 
 import { Modalservice } from '../../../../../services/api/modalservice/modalservice';
-// 🚀 IMPORTAMOS EL WALKIE-TALKIE
+
 import { ChatNavigationService } from '../../../../../services/api/chat-navigation-service/chat-navigation-service';
+import { ConversationResponse } from '../../../../../services/api';
 
 type tabType = 'ONLINE' | 'ALL' | 'PENDING' | 'ADD';
 type ViewType = 'FRIENDS' | 'CHAT';
 
 @Component({
   selector: 'app-home',
-  standalone: true, // 🚀 Añadí standalone por si acaso
+  standalone: true,
   imports: [
     CommonModule, 
     DmSidebar, 
@@ -37,15 +38,14 @@ export class Home implements OnInit, OnDestroy {
   activeTab: tabType = 'ALL';
 
   activeConversationId: number | null = null;
-  activeFriendName: string = '';
+  activeFriendName = '';
 
   private chatNavSub?: Subscription;
 
-  constructor(
-    private chatNavigationService: ChatNavigationService,
-    private modalService: Modalservice,
-    private cdr: ChangeDetectorRef // 🚀 INYECTAMOS EL DETECTOR DE CAMBIOS
-  ) {}
+  private chatNavigationService = inject(ChatNavigationService)
+  private modalService = inject(Modalservice)
+  private cdr = inject(ChangeDetectorRef) 
+
 
   ngOnInit() {
     // 📻 Nos ponemos a escuchar el Walkie-Talkie
@@ -63,17 +63,13 @@ export class Home implements OnInit, OnDestroy {
     this.chatNavSub?.unsubscribe();
   }
 
-  openChat(eventData: any) {
+  openChat(eventData: ConversationResponse) {
     console.log('Solicitud para abrir chat:', eventData);
 
-    if (eventData.otherUserName) {
-      this.activeConversationId = eventData.id;
-      this.activeFriendName = eventData.otherUserName;
-    } 
-    else {
-      this.activeConversationId = eventData.conversationId;
-      this.activeFriendName = eventData.friendName;
-    }
+    this.activeConversationId = eventData.id ?? null;
+    this.activeFriendName = eventData.otherUserName ?? '';
+   
+
 
     // Cambiamos la vista
     this.currentView = 'CHAT';
