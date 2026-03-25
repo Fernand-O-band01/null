@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ServerSidebar } from "../../components/server-sidebar/server-sidebar";
 import { UserPanel } from '../../components/user-panel/user-panel';
@@ -16,8 +16,7 @@ import { CommonModule } from '@angular/common';
 })
 export class Main {
 
-constructor(
-  public modalService: Modalservice
-){}
+  public modalService = inject(Modalservice)
+
 
 }

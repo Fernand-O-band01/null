@@ -59,18 +59,16 @@ export class FriendsAll implements OnInit, OnDestroy {
   fetchFriends(): void {
     this.isLoading = true;
     
-    // 🛡️ IMPORTANTE: Si recargamos la lista, limpiamos las suscripciones viejas
-    // para que no se dupliquen los eventos del WebSocket.
     this.subscriptions.unsubscribe();
     this.subscriptions = new Subscription();
 
     this.friendService.getMyFriends().subscribe({
       next: (friends) => {
-        // 1. Filtrado inicial: Solo los que NO están OFFLINE
+
         this.FriendsList = friends
         this.isLoading = false;
         
-        // 2. Suscribirse a cambios de estado para cada amigo cargado
+
         this.FriendsList.forEach(friend => {
           if (friend.id) {
             const statusSub = this.presenceService.watchUserStatus(friend.id).subscribe({
@@ -102,17 +100,17 @@ export class FriendsAll implements OnInit, OnDestroy {
   }
 
   private handleStatusUpdate(friendId: number, rawStatus: string): void {
-    // 🚀 EL TRUCO DE MAGIA: Limpiamos las comillas y espacios basura que manda Spring Boot
+
     const newStatus = rawStatus.replace(/['"]+/g, '').trim(); 
     
     console.log(`Estado procesado para ID ${friendId}: [${newStatus}]`);
       const index = this.FriendsList.findIndex(f => f.id === friendId);
       if (index !== -1) {
-        // Reemplazamos el objeto completo para disparar la detección de cambios
+
         this.FriendsList[index] = { ...this.FriendsList[index], status: newStatus as FriendResponseDTO.StatusEnum };
         this.cdr.detectChanges();
       } else if (newStatus !== 'OFFLINE') {
-        // Si un amigo se conecta y no estaba en la lista, recargamos
+
         this.fetchFriends();
         this.cdr.detectChanges();
       }

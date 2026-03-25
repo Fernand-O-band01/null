@@ -1,13 +1,12 @@
 import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs'; // 🚀 Para gestionar la memoria
+import { Subscription } from 'rxjs'; 
 
 import { ConversationControllerService } from '../../../../services/api';
 import { ConversationResponse } from '../../../../services/api';
 import { Modalservice } from '../../../../services/api/modalservice/modalservice';
 import { CreateDmModalComponent } from './components/create-dm-modal/create-dm-modal/create-dm-modal';
 
-// 📻 Importamos el servicio de navegación que une el Modal con el resto de la App
 import { ChatNavigationService } from '../../../../services/api/chat-navigation-service/chat-navigation-service'; 
 
 @Component({
@@ -41,7 +40,7 @@ export class DmSidebar implements OnInit, OnDestroy {
       // 1. Cargamos las conversaciones que ya existen en la base de datos
       this.loadConversation();
       
-      // 2. 📻 NOS PONEMOS A ESCUCHAR EL CANAL DE RADIO
+      // 2. NOS PONEMOS A ESCUCHAR EL CANAL DE RADIO
       // Este bloque se ejecutará CADA VEZ que el modal cree un chat exitosamente.
       this.navSub = this.chatNavigationService.openChat$.subscribe(data => {
         
@@ -49,7 +48,7 @@ export class DmSidebar implements OnInit, OnDestroy {
         const alreadyExists = this.conversations.find(c => c.id === data.id);
         
         if (!alreadyExists) {
-          console.log('✨ Sidebar detectó nuevo chat: Agregando a la lista sin recargar...');
+          console.log('Sidebar detectó nuevo chat: Agregando a la lista sin recargar...');
 
           // Agregamos el nuevo chat al PRINCIPIO de la lista (unshift)
           // Usamos la data que viene del "Walkie-Talkie" { conversationId, friendName }
@@ -58,7 +57,7 @@ export class DmSidebar implements OnInit, OnDestroy {
             otherUserName: data.otherUserName
           });
           
-          // 🚀 EL PASO CRUCIAL:
+
           // Como este cambio ocurre dentro de una suscripción (fuera del ciclo normal de Angular),
           // obligamos a la barra lateral a redibujarse para mostrar el nuevo chat.
           this.cdr.detectChanges(); 

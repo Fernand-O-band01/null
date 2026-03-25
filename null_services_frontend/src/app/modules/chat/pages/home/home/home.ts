@@ -48,13 +48,10 @@ export class Home implements OnInit, OnDestroy {
 
 
   ngOnInit() {
-    // 📻 Nos ponemos a escuchar el Walkie-Talkie
     this.chatNavSub = this.chatNavigationService.openChat$.subscribe(data => {
       console.log('📻 home.ts escuchó el modal! Abriendo chat:', data);
       
       this.openChat(data);
-
-      // 🚀 EL EMPUJÓN MÁGICO: Obligamos a Angular a mostrar el ChatRoom
       this.cdr.detectChanges(); 
     });
   }
