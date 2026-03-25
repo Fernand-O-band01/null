@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FriendsControllerService, FriendResponseDTO } from '../../../../../../services/api';
 import { PresenceService } from '../../../../../../services/api/presence/presence';
@@ -13,16 +13,14 @@ import { Websocket } from '../../../../../../services/api/websocket/websocket';
   styleUrl: './friends-online.css',
 })
 export class FriendsOnline implements OnInit, OnDestroy {
-  onlineFriends: Array<FriendResponseDTO> = [];
-  isLoading: boolean = true;
+  onlineFriends: FriendResponseDTO[] = [];
+  isLoading = true;
   private subscriptions: Subscription = new Subscription();
 
-  constructor(
-    private friendService: FriendsControllerService,
-    private cdr: ChangeDetectorRef,
-    private presenceService: PresenceService,
-    private ws: Websocket
-  ) {}
+  private friendService = inject(FriendsControllerService)
+  private cdr = inject(ChangeDetectorRef)
+  private presenceService = inject(PresenceService)
+  private ws = inject(Websocket)
 
   ngOnInit(): void {
     // 🚀 Se ejecuta automáticamente al entrar a la pestaña
@@ -82,7 +80,7 @@ export class FriendsOnline implements OnInit, OnDestroy {
       const index = this.onlineFriends.findIndex(f => f.id === friendId);
       if (index !== -1) {
         // Reemplazamos el objeto completo para disparar la detección de cambios
-        this.onlineFriends[index] = { ...this.onlineFriends[index], status: newStatus as any };
+        this.onlineFriends[index] = { ...this.onlineFriends[index], status: newStatus as FriendResponseDTO.StatusEnum };
         this.cdr.detectChanges();
       } else if (newStatus !== 'OFFLINE') {
         // Si un amigo se conecta y no estaba en la lista, recargamos
