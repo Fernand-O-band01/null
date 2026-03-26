@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthenticationService } from '../../services/api';
@@ -20,9 +20,9 @@ export class Register {
     dateOfBirth: ''
   };
 
-  selectedDay: string = '';
-  selectedMonth: string = '';
-  selectedYear: string = '';  
+  selectedDay = '';
+  selectedMonth = '';
+  selectedYear = '';  
 
   days: number[] = Array.from({ length: 31 }, (_, i) => i + 1);
   years: number[] = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
@@ -40,14 +40,9 @@ export class Register {
     { value: '11', name: 'Noviembre' },
     { value: '12', name: 'Diciembre' }]
 
-  errorMessage: Array<string> = [];
-
-  constructor(
-    private authService: AuthenticationService,
-    private router: Router
-  ) {
-
-  }
+  errorMessage: string[] = [];
+  private authService = inject(AuthenticationService)
+  private router = inject(Router)
 
   register() {
 
