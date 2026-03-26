@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Websocket } from '../websocket/websocket';// Ajusta la ruta a tu archivo
 import { map, Observable } from 'rxjs';
 
@@ -7,7 +7,7 @@ import { map, Observable } from 'rxjs';
 })
 export class PresenceService {
 
-  constructor(private ws: Websocket) { }
+  private ws = inject(Websocket)
 
   /**
    * Escucha los cambios de estado de un usuario específico.
