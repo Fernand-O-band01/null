@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthenticationService } from '../../services/api';
 import { CodeInputModule } from 'angular-code-input';
@@ -13,12 +13,8 @@ export class ActivateAccount {
 
   errorMessage = ' ';
 
-  constructor(
-    private authService: AuthenticationService,
-    private router: Router
-  ) {
-
-  }
+  private authService = inject(AuthenticationService)
+  private router = inject(Router)
 
   onCodeCompleted(code: string) {
     this.errorMessage = ' ';
