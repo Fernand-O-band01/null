@@ -9,14 +9,13 @@ import { CommonModule } from '@angular/common';
 })
 export class VoiceControlPanel {
 
-  @Input() channelName: string = '';
-  @Input() serverName: string = '';
-  showSmallPanel: boolean = false;
-  // 📞 Un evento para avisarle al padre (server.ts) que queremos colgar
-  @Output() onDisconnect = new EventEmitter<void>();
+  @Input() channelName = '';
+  @Input() serverName = '';
+  showSmallPanel = false;
+  @Output() toDisconnect = new EventEmitter<void>();
 
   disconnect() {
-    this.onDisconnect.emit();
+    this.toDisconnect.emit();
   }
 
 }

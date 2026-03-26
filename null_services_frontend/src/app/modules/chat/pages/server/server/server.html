@@ -103,7 +103,7 @@
         <app-voice-control-panel 
           [channelName]="activeChannelName"
           [serverName]="getServerName()"
-          (onDisconnect)="leaveVoiceChannel()"
+          (toDisconnect)="leaveVoiceChannel()"
           class="w-full"
           >
         </app-voice-control-panel>
